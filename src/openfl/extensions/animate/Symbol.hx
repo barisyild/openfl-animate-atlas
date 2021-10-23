@@ -48,7 +48,7 @@ class Symbol extends AnimateAtlasTileContainer
     private static var sMatrix : Matrix = new Matrix();
 
     @:access(openfl.extensions.animate.AnimationAtlas)
-    public static function createFromAtlas(atlas:AnimationAtlas, name:String = null)
+    public static function createFromAtlas(atlas:AnimationAtlas, name:String = null):Symbol
     {
         return new Symbol(atlas.getSymbolData(name == null ? atlas._defaultSymbolName : name), atlas);
     }
@@ -114,8 +114,6 @@ class Symbol extends AnimateAtlasTileContainer
 
     public function reset():Void
     {
-        matrix = sMatrix;
-
         alpha = 1.0;
         _currentFrame = 0;
         _composedFrame = -1;
@@ -320,7 +318,7 @@ class Symbol extends AnimateAtlasTileContainer
             _loopMode = LoopMode.LOOP;
     }
 
-    private function setType(data:String):Void
+    private inline function setType(data:String):Void
     {
         if (data != null)
             _type = SymbolType.parse(data);
