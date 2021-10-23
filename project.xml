@@ -7,7 +7,6 @@
     <!-- classpath, haxe libs -->
     <source path="src" />
     <haxelib name="openfl" />
-    <haxelib name="OpenFl-Animate-Atlas-Player" />
 
     <!-- assets -->
     <assets path="assets" embed="true" preload="true"/>
