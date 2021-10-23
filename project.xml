@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+    <meta title="openfl-animate-atlas" package="openfl.extensions.animate" version="1.0.0" company="Barış Yıldırım" />
+
+    <app main="Main" file="openfl-animate-atlas" path="Export" />
+
+    <!-- classpath, haxe libs -->
+    <source path="src" />
+    <haxelib name="openfl" />
+    <haxelib name="OpenFl-Animate-Atlas-Player" />
+
+    <!-- assets -->
+    <assets path="assets" embed="true" preload="true"/>
+
+    <window background="#808080"/>
+</project>
