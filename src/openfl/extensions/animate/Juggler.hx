@@ -22,7 +22,7 @@ class Juggler {
 
     private static function onEnterFrame(e:Event):Void
     {
-        for(animation in arr)
+        for(animation in array)
         {
             animation.updateFrame(0.016);
         }
