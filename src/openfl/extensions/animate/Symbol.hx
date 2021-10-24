@@ -376,7 +376,7 @@ class Symbol extends AnimateAtlasTileContainer
 
     private inline function getLayer(layerIndex:Int):TileContainer
     {
-        return cast(getTileAt(layerIndex + 1), TileContainer);
+        return cast getTileAt(layerIndex + 1);
     }
 
     public function getNextLabel(afterLabel:String=null):String
