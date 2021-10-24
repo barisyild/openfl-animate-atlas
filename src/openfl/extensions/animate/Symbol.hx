@@ -37,7 +37,6 @@ class Symbol extends AnimateAtlasTileContainer
     private var _loopMode : String;
     private var _currentFrame : Int = 0;
     private var _composedFrame : Int = 0;
-    private var _layers:TileContainer;
     private var _bitmap:AnimateAtlasTile;
     private var _numFrames : Int = 0;
     private var _numLayers : Int = 0;
@@ -67,6 +66,9 @@ class Symbol extends AnimateAtlasTileContainer
         _type = SymbolType.GRAPHIC;
         _loopMode = LoopMode.LOOP;
         this.tileset = atlas._tileset;
+        _bitmap = new AnimateAtlasTile();
+        addTile(_bitmap);
+        _bitmap.visible = false;
 
 
         createLayers();
@@ -242,16 +244,10 @@ class Symbol extends AnimateAtlasTileContainer
 
     private function createLayers():Void
     {
-        if (_layers != null)
-            throw new Error("Method must only be called once");
-
-        _layers = new TileContainer();
-        addTile(_layers);
-
         for (i in 0..._numLayers)
         {
             var layer:TileContainer = new TileContainer();
-            _layers.addTile(layer);
+            addTile(layer);
         }
     }
 
@@ -262,11 +258,7 @@ class Symbol extends AnimateAtlasTileContainer
         {
             id = _atlas.getId(data.name);
 
-            if (_bitmap == null)
-            {
-                _bitmap = new AnimateAtlasTile();
-                addTile(_bitmap);
-            }
+            _bitmap.visible = true;
 
             _bitmap.id = id;
 
@@ -281,10 +273,7 @@ class Symbol extends AnimateAtlasTileContainer
         }
         else if (_bitmap != null)
         {
-            _bitmap.x = 0;
-            _bitmap.y = 0;
-            removeTile(_bitmap);
-            _bitmap = null;
+            _bitmap.visible = false;
         }
     }
 
@@ -387,7 +376,7 @@ class Symbol extends AnimateAtlasTileContainer
 
     private inline function getLayer(layerIndex:Int):TileContainer
     {
-        return cast(_layers.getTileAt(layerIndex), TileContainer);
+        return cast(getTileAt(layerIndex + 1), TileContainer);
     }
 
     public function getNextLabel(afterLabel:String=null):String
