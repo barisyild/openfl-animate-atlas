@@ -1,7 +1,8 @@
 package openfl.extensions.animate;
 import openfl.events.Event;
 class Juggler {
-    private static var array:Array<Symbol> = [];
+    private static var _array:Array<Symbol> = [];
+    private static var _frameTimestamp:Float = 0.0;
 
     public static function init():Void
     {
@@ -9,22 +10,31 @@ class Juggler {
     }
 
     public static function has(symbol:Symbol):Bool {
-        return array.contains(symbol);
+        return _array.contains(symbol);
     }
 
     public static function add(symbol:Symbol):Void {
-        array.push(symbol);
+        _array.push(symbol);
     }
 
     public static function remove(symbol:Symbol):Void {
-        array.remove(symbol);
+        _array.remove(symbol);
     }
 
     private static function onEnterFrame(e:Event):Void
     {
-        for(animation in array)
+        //Source: https://github.com/Gamua/Starling-Framework/blob/5afc2c25219508d1173e7e683874d898bc33cc81/starling/src/starling/core/Starling.as#L396
+        var now:Float = Lib.getTimer() / 1000.0;
+        var passedTime:Float = now - _frameTimestamp;
+        _frameTimestamp = now;
+
+        if (passedTime > 1.0) passedTime = 1.0;
+
+        if (passedTime < 0.0) passedTime = 1.0 / openfl.Lib.current.stage.frameRate;
+
+        for(animation in _array)
         {
-            animation.updateFrame(0.016);
+            animation.updateFrame(passedTime);
         }
     }
 }
