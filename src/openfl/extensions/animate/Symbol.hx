@@ -29,7 +29,7 @@ class Symbol extends AnimateAtlasTileContainer
     public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
 
     private var _cumulatedTime : Float = 0.0;
-    private var _stopped:Bool = false;
+    private var _playing:Bool = true;
     private var _data : SymbolData;
     private var _atlas : AnimationAtlas;
     private var _symbolName : String;
@@ -89,12 +89,12 @@ class Symbol extends AnimateAtlasTileContainer
 
     public function play():Void
     {
-        _stopped = false;
+        _playing = true;
     }
 
     public function stop():Void
     {
-        _stopped = true;
+        _playing = false;
     }
 
     public function getSymbolByName(name:String):Symbol
@@ -149,7 +149,7 @@ class Symbol extends AnimateAtlasTileContainer
     /** Moves all movie clips ahead one frame, recursively. */
     public function nextFrame_MovieClips():Void
     {
-        if(_stopped)
+        if(!_playing)
             return;
 
         if (_type == SymbolType.MOVIE_CLIP)
@@ -361,7 +361,7 @@ class Symbol extends AnimateAtlasTileContainer
         return labels;
     }
 
-    function sortLabels(i1:FrameLabel, i2:FrameLabel):Int
+    private function sortLabels(i1:FrameLabel, i2:FrameLabel):Int
     {
         var f1 = i1.frame;
         var f2 = i2.frame;
@@ -450,6 +450,7 @@ class Symbol extends AnimateAtlasTileContainer
     {
         return _type;
     }
+
     private function set_type(value : String) : String
     {
         if (SymbolType.isValid(value))
@@ -463,6 +464,7 @@ class Symbol extends AnimateAtlasTileContainer
     {
         return _loopMode;
     }
+
     private function set_loopMode(value : String) : String
     {
         if (LoopMode.isValid(value))
@@ -494,7 +496,7 @@ class Symbol extends AnimateAtlasTileContainer
 
     // data access
 
-    private function getLayerData(layerIndex : Int) : LayerData
+    private inline function getLayerData(layerIndex : Int) : LayerData
     {
         return _data.timeline.layers[layerIndex];
     }
