@@ -8,7 +8,6 @@ import openfl.extensions.animate.display.AnimateAtlasTileContainer;
 import openfl.extensions.animate.utils.MathUtil;
 import openfl.extensions.animate.AnimationAtlasData;
 import openfl.display.BitmapData;
-import openfl.extensions.animate.display.Image;
 import openfl.extensions.animate.SymbolType;
 import openfl.filters.ColorMatrixFilter;
 import openfl.display.FrameLabel;

@@ -7,7 +7,6 @@ import openfl.extensions.animate.AnimationAtlasData;
 import openfl.extensions.animate.ATLAS;
 import openfl.display.BitmapData;
 import openfl.errors.ArgumentError;
-import openfl.extensions.animate.display.Image;
 
 class AnimationAtlas
 {
@@ -18,7 +17,6 @@ class AnimationAtlas
     private var _tileset:AnimateAtlasTileset;
     private var _symbolData : Map<String, SymbolData>;
     private var _symbolPool : Map<String, Array<Symbol>>;
-    private var _imagePool : Array<Image>;
     private var _frameRate : Float;
     private var _defaultSymbolName : String;
 
@@ -41,7 +39,6 @@ class AnimationAtlas
         parseData(data, animationAtlasData);
 
         _symbolPool = new Map<String, Array<Symbol>>();
-        _imagePool = [];
     }
 
     public function hasAnimation(name : String) : Bool
