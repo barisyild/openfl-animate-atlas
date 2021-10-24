@@ -77,7 +77,7 @@ class Symbol extends AnimateAtlasTileContainer
 
     public function gotoAndPlay(frame:Dynamic)
     {
-        currentFrame = Std.isOfType(frame, String) ? getFrame(cast(frame, String)) : Std.int(frame);
+        currentFrame = Std.isOfType(frame, String) ? getFrame(cast frame) : Std.int(frame);
         play();
     }
 
@@ -107,7 +107,7 @@ class Symbol extends AnimateAtlasTileContainer
             for (e in 0...numElements)
             {
                 if(cast(layer.getTileAt(e),Symbol).name == name)
-                    return cast(layer.getTileAt(e),Symbol);
+                    return cast layer.getTileAt(e);
             }
         }
 
@@ -185,7 +185,7 @@ class Symbol extends AnimateAtlasTileContainer
         for (i in 0...numElements)
         {
             var elementData:SymbolInstanceData = elements[i].symbolInstance;
-            oldSymbol = layer.numTiles > i ? cast(layer.getTileAt(i),Symbol) : null;
+            oldSymbol = layer.numTiles > i ? cast layer.getTileAt(i) : null;
             var newSymbol:Symbol = null;
             var symbolName:String = elementData.symbolName;
 
@@ -237,7 +237,7 @@ class Symbol extends AnimateAtlasTileContainer
 
         for (i in 0...numObsoleteSymbols)
         {
-            oldSymbol = cast(layer.removeTileAt(numElements), Symbol);
+            oldSymbol = cast layer.removeTileAt(numElements);
             _atlas.putSymbol(oldSymbol);
         }
     }
