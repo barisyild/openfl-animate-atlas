@@ -1,5 +1,6 @@
 package openfl.extensions.animate;
 
+import haxe.Constraints.Function;
 import openfl.extensions.animate.display.AnimateAtlasTile;
 import openfl.display.Tile;
 import openfl.display.TileContainer;
@@ -42,6 +43,7 @@ class Symbol extends AnimateAtlasTileContainer
     private var _numLayers : Int = 0;
     private var _frameLabels : Array<FrameLabel>;
     private var _colorTransform:ColorMatrixFilter;
+    private var _frameScripts:Map<Int, Function>;
 
     private static var ALPHA_MODES = ["Alpha", "Advanced", "AD"];
     private static var sMatrix : Matrix = new Matrix();
@@ -56,6 +58,8 @@ class Symbol extends AnimateAtlasTileContainer
     public function new(data:SymbolData, atlas:AnimationAtlas)
     {
         super();
+        tileset = atlas._tileset;
+
         _data = data;
         _atlas = atlas;
         _composedFrame = -1;
@@ -65,14 +69,25 @@ class Symbol extends AnimateAtlasTileContainer
         _symbolName = data.symbolName;
         _type = SymbolType.GRAPHIC;
         _loopMode = LoopMode.LOOP;
-        this.tileset = atlas._tileset;
+        _frameScripts = new Map<Int, Function>();
         _bitmap = new AnimateAtlasTile();
+
         addTile(_bitmap);
         _bitmap.visible = false;
 
 
         createLayers();
         update();
+    }
+
+    public function addFrameScript(frame:Int, func:Function):Void
+    {
+        _frameScripts.set(frame, func);
+    }
+
+    public function removeFrameScript(frame:Int, func:Function):Void
+    {
+        _frameScripts.remove(frame);
     }
 
     public function gotoAndPlay(frame:Dynamic)
@@ -239,6 +254,11 @@ class Symbol extends AnimateAtlasTileContainer
         {
             oldSymbol = cast layer.removeTileAt(numElements);
             _atlas.putSymbol(oldSymbol);
+        }
+
+        if(_frameScripts.exists(_currentFrame))
+        {
+            _frameScripts.get(_currentFrame)();
         }
     }
 
