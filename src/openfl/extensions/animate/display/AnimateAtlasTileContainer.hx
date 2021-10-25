@@ -1,11 +1,10 @@
 package openfl.extensions.animate.display;
 import openfl.display.TileContainer;
-class AnimateAtlasTileContainer extends TileContainer {
-    private var _paddingX:Float = 0.0;
-    private var _paddingY:Float = 0.0;
-    public var name:String;
+class AnimateAtlasTileContainer extends AnimateSymbol {
 
-    public function new() {
-        super();
+    @:access(openfl.extensions.animate.AnimationAtlas)
+    public function new(atlas:AnimationAtlas, name:String = null) {
+        super(atlas.getSymbolData(name == null ? atlas._defaultSymbolName : name), atlas);
+        tileset = atlas._tileset;
     }
 }

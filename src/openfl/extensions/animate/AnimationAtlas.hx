@@ -1,5 +1,6 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.display.AnimateSymbol;
 import String;
 import flash.geom.Rectangle;
 import openfl.extensions.animate.display.AnimateAtlasTileset;
@@ -16,7 +17,7 @@ class AnimationAtlas
 
     private var _tileset:AnimateAtlasTileset;
     private var _symbolData : Map<String, SymbolData>;
-    private var _symbolPool : Map<String, Array<Symbol>>;
+    private var _symbolPool : Map<String, Array<AnimateSymbol>>;
     private var _frameRate : Float;
     private var _defaultSymbolName : String;
 
@@ -38,7 +39,7 @@ class AnimationAtlas
         var data:AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
         parseData(data, animationAtlasData);
 
-        _symbolPool = new Map<String, Array<Symbol>>();
+        _symbolPool = new Map<String, Array<AnimateSymbol>>();
     }
 
     public inline function hasAnimation(name : String) : Bool
@@ -52,7 +53,7 @@ class AnimationAtlas
 
         for (name in _symbolData.keys())
         {
-            if (name != Symbol.BITMAP_SYMBOL_NAME && name.indexOf(prefix) == 0)
+            if (name != AnimateSymbol.BITMAP_SYMBOL_NAME && name.indexOf(prefix) == 0)
             {
                 out[out.length] = name;
             }
@@ -88,19 +89,19 @@ class AnimationAtlas
     }
 
     @:allow(openfl.extensions.animate)
-    private function getSymbol(name : String) : Symbol
+    private function getSymbol(name : String) : AnimateSymbol
     {
-        var pool:Array<Symbol> = getSymbolPool(name);
+        var pool:Array<AnimateSymbol> = getSymbolPool(name);
         if (pool.length == 0)
-            return new Symbol(getSymbolData(name), this);
+            return new AnimateSymbol(getSymbolData(name), this);
         else return pool.pop();
     }
 
     @:allow(openfl.extensions.animate)
-    private function putSymbol(symbol : Symbol) : Void
+    private function putSymbol(symbol : AnimateSymbol) : Void
     {
         symbol.reset();
-        var pool:Array<Symbol> = getSymbolPool(symbol.symbolName);
+        var pool:Array<AnimateSymbol> = getSymbolPool(symbol.symbolName);
         pool[pool.length] = symbol;
         symbol.currentFrame = 0;
     }
@@ -137,9 +138,9 @@ class AnimationAtlas
         _symbolData[_defaultSymbolName] = defaultSymbolData;
 
         // a purely internal symbol for bitmaps - simplifies their handling
-        var symbolData:SymbolData = {symbolName: Symbol.BITMAP_SYMBOL_NAME};
+        var symbolData:SymbolData = {symbolName: AnimateSymbol.BITMAP_SYMBOL_NAME};
         symbolData.timeline = {layers: []};
-        _symbolData[Symbol.BITMAP_SYMBOL_NAME] = symbolData;
+        _symbolData[AnimateSymbol.BITMAP_SYMBOL_NAME] = symbolData;
     }
 
     private static function preprocessSymbolData(symbolData : SymbolData) : SymbolData
@@ -180,7 +181,7 @@ class AnimationAtlas
                     {
                         element = elements[e] = {
                             symbolInstance: {
-                                symbolName: Symbol.BITMAP_SYMBOL_NAME,
+                                symbolName: AnimateSymbol.BITMAP_SYMBOL_NAME,
                                 instanceName: "InstName",
                                 bitmap: element.atlasSpriteInstance,
                                 symbolType: SymbolType.GRAPHIC,
@@ -209,12 +210,12 @@ class AnimationAtlas
         return _symbolData.get(name);
     }
 
-    private function getSymbolPool(name : String) : Array<Symbol>
+    private function getSymbolPool(name : String) : Array<AnimateSymbol>
     {
-        var pool : Array<Symbol> = cast _symbolPool.get(name);
+        var pool : Array<AnimateSymbol> = cast _symbolPool.get(name);
         if (pool == null)
         {
-            pool = new Array<Symbol>();
+            pool = new Array<AnimateSymbol>();
             _symbolPool.set(name, cast pool);
         }
         return pool;

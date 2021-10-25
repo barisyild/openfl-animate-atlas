@@ -1,4 +1,4 @@
-package openfl.extensions.animate;
+package openfl.extensions.animate.display;
 
 import haxe.Constraints.Function;
 import openfl.extensions.animate.display.AnimateAtlasTile;
@@ -15,7 +15,7 @@ import openfl.errors.ArgumentError;
 import openfl.errors.Error;
 import openfl.geom.Matrix;
 
-class Symbol extends AnimateAtlasTileContainer
+class AnimateSymbol extends TileContainer
 {
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
@@ -27,6 +27,8 @@ class Symbol extends AnimateAtlasTileContainer
     public var frameRate(get, never):Float;
 
     public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
+
+    public var name:String;
 
     private var _cumulatedTime : Float = 0.0;
     private var _playing:Bool = true;
@@ -48,17 +50,9 @@ class Symbol extends AnimateAtlasTileContainer
     private static var sMatrix : Matrix = new Matrix();
 
     @:access(openfl.extensions.animate.AnimationAtlas)
-    public static function createFromAtlas(atlas:AnimationAtlas, name:String = null):Symbol
-    {
-        return new Symbol(atlas.getSymbolData(name == null ? atlas._defaultSymbolName : name), atlas);
-    }
-
-    @:access(openfl.extensions.animate.AnimationAtlas)
     public function new(data:SymbolData, atlas:AnimationAtlas)
     {
         super();
-        tileset = atlas._tileset;
-
         _data = data;
         _atlas = atlas;
         _composedFrame = -1;
@@ -73,7 +67,6 @@ class Symbol extends AnimateAtlasTileContainer
 
         addTile(_bitmap);
         _bitmap.visible = false;
-
 
         createLayers();
         update();
@@ -111,7 +104,7 @@ class Symbol extends AnimateAtlasTileContainer
         _playing = false;
     }
 
-    public function getSymbolByName(name:String):Symbol
+    public function getSymbolByName(name:String):AnimateSymbol
     {
         for (l in 0..._numLayers)
         {
@@ -120,7 +113,7 @@ class Symbol extends AnimateAtlasTileContainer
 
             for (e in 0...numElements)
             {
-                if(cast(layer.getTileAt(e),Symbol).name == name)
+                if(cast(layer.getTileAt(e),AnimateSymbol).name == name)
                     return cast layer.getTileAt(e);
             }
         }
@@ -175,7 +168,7 @@ class Symbol extends AnimateAtlasTileContainer
             var numElements:Int = layer.numTiles;
 
             for (e in 0...numElements)
-                cast(layer.getTileAt(e), Symbol).nextFrame_MovieClips();
+                cast(layer.getTileAt(e), AnimateSymbol).nextFrame_MovieClips();
         }
     }
 
@@ -194,13 +187,13 @@ class Symbol extends AnimateAtlasTileContainer
         var elements:Array<ElementData> = frameData != null ? frameData.elements : null;
         var numElements:Int = elements != null ? elements.length : 0;
 
-        var oldSymbol:Symbol = null;
+        var oldSymbol:AnimateSymbol = null;
 
         for (i in 0...numElements)
         {
             var elementData:SymbolInstanceData = elements[i].symbolInstance;
             oldSymbol = layer.numTiles > i ? cast layer.getTileAt(i) : null;
-            var newSymbol:Symbol = null;
+            var newSymbol:AnimateSymbol = null;
             var symbolName:String = elementData.symbolName;
 
             if (!_atlas.hasSymbol(symbolName))

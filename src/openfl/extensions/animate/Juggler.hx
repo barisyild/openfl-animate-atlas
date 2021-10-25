@@ -1,7 +1,11 @@
 package openfl.extensions.animate;
+
+import openfl.extensions.animate.display.AnimateAtlasTileContainer;
+import openfl.extensions.animate.display.AnimateSymbol;
 import openfl.events.Event;
+
 class Juggler {
-    private static var _array:Array<Symbol> = [];
+    private static var _array:Array<AnimateAtlasTileContainer> = [];
     private static var _frameTimestamp:Float = 0.0;
 
     public static function init():Void
@@ -9,15 +13,15 @@ class Juggler {
         openfl.Lib.current.stage.addEventListener(Event.ENTER_FRAME, onEnterFrame);
     }
 
-    public static function has(symbol:Symbol):Bool {
+    public static function has(symbol:AnimateAtlasTileContainer):Bool {
         return _array.contains(symbol);
     }
 
-    public static function add(symbol:Symbol):Void {
+    public static function add(symbol:AnimateAtlasTileContainer):Void {
         _array.push(symbol);
     }
 
-    public static function remove(symbol:Symbol):Void {
+    public static function remove(symbol:AnimateAtlasTileContainer):Void {
         _array.remove(symbol);
     }
 
