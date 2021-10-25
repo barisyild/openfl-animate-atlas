@@ -41,7 +41,7 @@ class AnimationAtlas
         _symbolPool = new Map<String, Array<Symbol>>();
     }
 
-    public function hasAnimation(name : String) : Bool
+    public inline function hasAnimation(name : String) : Bool
     {
         return hasSymbol(name);
     }
@@ -76,13 +76,13 @@ class AnimationAtlas
     // pooling
 
     @:allow(openfl.extensions.animate)
-    public function getId(name : String):Int
+    public inline function getId(name : String):Int
     {
         return _tileset.__names.get(name);
     }
 
     @:allow(openfl.extensions.animate)
-    private function hasSymbol(name : String) : Bool
+    private inline function hasSymbol(name : String) : Bool
     {
         return _symbolData.exists(name);
     }
@@ -204,7 +204,7 @@ class AnimationAtlas
         return symbolData;
     }
 
-    public function getSymbolData(name : String):SymbolData
+    public inline function getSymbolData(name : String):SymbolData
     {
         return _symbolData.get(name);
     }
