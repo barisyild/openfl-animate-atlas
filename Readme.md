@@ -10,7 +10,7 @@ var tilemap:Tilemap = new Tilemap(stage.stageWidth, stage.stageHeight);
 tilemap.smoothing = false;
 addChild(tilemap);
 
-var animation = Symbol.createFromAtlas(animationAtlas); //I am planning to make the API similar to flash's DisplayObject API.
+var animation = new AnimateAtlasTileContainer(animationAtlas); //I am planning to make the API similar to flash's DisplayObject API.
 animation.x = stage.stageWidth / 2;
 animation.y = stage.stageHeight / 2;
 tilemap.addTile(animation);
