@@ -1,25 +1,21 @@
 package openfl.extensions.animate;
 
 typedef ATLAS = {
-    var ATLAS:ATLAS_MAIN;
-}
-
-typedef ATLAS_MAIN = {
-    var SPRITES:Array<SPRITE>;
-    var meta:Meta;
+    var ATLAS:{
+        var SPRITES:Array<SPRITE>;
+        var meta:Meta;
+    };
 }
 
 typedef SPRITE = {
-    var SPRITE:SPRITE_MAIN;
-}
-
-typedef SPRITE_MAIN = {
-    var name:String;
-    var x:Int;
-    var y:Int;
-    var w:Int;
-    var h:Int;
-    var rotated:Bool;
+    var SPRITE:{
+        var name:String;
+        var x:Int;
+        var y:Int;
+        var w:Int;
+        var h:Int;
+        var rotated:Bool;
+    };
 }
 
 typedef Meta = {

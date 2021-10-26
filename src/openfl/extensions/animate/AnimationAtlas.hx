@@ -29,15 +29,15 @@ class AnimationAtlas
         m30: 0, m31: 0, m32: 0, m33: 1
     };
 
-    public function new(rawAnimationData:Dynamic, animationAtlasData:ATLAS, tileset:AnimateAtlasTileset)
+    public function new(spritemap:BitmapData, atlas:ATLAS, rawAnimationData:Dynamic)
     {
         if (rawAnimationData  == null) throw new ArgumentError("data must not be null");
-        if (tileset == null) throw new ArgumentError("atlas must not be null");
+        if (spritemap == null) throw new ArgumentError("spritemap must not be null");
 
-        _tileset = tileset;
+        _tileset = new AnimateAtlasTileset(spritemap);
 
         var data:AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
-        parseData(data, animationAtlasData);
+        parseData(data, atlas);
 
         _symbolPool = new Map<String, Array<AnimateSymbol>>();
     }
@@ -108,9 +108,9 @@ class AnimationAtlas
 
     // helpers
 
-    private function parseData(data : AnimationAtlasData, animationAtlasData:ATLAS) : Void
+    private function parseData(data : AnimationAtlasData, atlas:ATLAS) : Void
     {
-        for(SPRITE in animationAtlasData.ATLAS.SPRITES)
+        for(SPRITE in atlas.ATLAS.SPRITES)
         {
             //TODO: Use rect pooling
             _tileset.__names.set(SPRITE.SPRITE.name, _tileset.addRect(new Rectangle(SPRITE.SPRITE.x, SPRITE.SPRITE.y, SPRITE.SPRITE.w, SPRITE.SPRITE.h)));
