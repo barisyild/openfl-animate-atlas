@@ -137,7 +137,8 @@ class AnimateSymbol extends TileContainer
 
         if (Std.int(prevTime * frameRate) != Std.int(_cumulatedTime * frameRate))
         {
-            currentFrame += 1;
+            if(_playing)
+                currentFrame += 1;
             nextFrame_MovieClips();
         }
     }
@@ -156,10 +157,7 @@ class AnimateSymbol extends TileContainer
     /** Moves all movie clips ahead one frame, recursively. */
     public function nextFrame_MovieClips():Void
     {
-        if(!_playing)
-            return;
-
-        if (_type == SymbolType.MOVIE_CLIP)
+        if (_type == SymbolType.MOVIE_CLIP && _playing)
             currentFrame += 1;
 
         for (l in 0..._numLayers)
