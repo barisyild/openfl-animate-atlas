@@ -1,5 +1,7 @@
 package openfl.extensions.animate.parser;
 
+import lime.app.Promise;
+import openfl.utils.Future;
 import lime._internal.format.Deflate;
 import haxe.io.BytesInput;
 import haxe.zip.Entry;
@@ -8,9 +10,9 @@ import haxe.Json;
 import openfl.display.BitmapData;
 
 class AnimateAtlasParser {
-    public static function parseCompressedAsset(bytes:Bytes):AnimationAtlas
+    public static inline function readCompressedContent(bytes:Bytes):{spritemapBytes:Bytes, spritemapJson:String, animationJson:String}
     {
-        var spritemap:BitmapData = null;
+        var spritemapBytes:Bytes = null;
         var spritemapJson:String = null;
         var animationJson:String = null;
 
@@ -28,7 +30,7 @@ class AnimateAtlasParser {
             switch(entry.fileName)
             {
                 case "spritemap1.png":
-                    spritemap = BitmapData.fromBytes(bytes);
+                    spritemapBytes = bytes;
                 case "spritemap1.json":
                     spritemapJson = bytes.toString();
                 case "Animation.json":
@@ -36,10 +38,38 @@ class AnimateAtlasParser {
             }
         }
 
-        return parseAsset(spritemap, spritemapJson, animationJson);
+        return {
+            spritemapBytes: spritemapBytes,
+            spritemapJson: spritemapJson,
+            animationJson: animationJson
+        }
     }
 
-    public static function parseAsset(spritemap:BitmapData, spritemapJson:String, animationJson:String):AnimationAtlas
+    public static function parseCompressedAsset(bytes:Bytes):Future<AnimationAtlas>
+    {
+        var promise:Promise<AnimationAtlas> = new Promise();
+
+        var compressedContent = readCompressedContent(bytes);
+
+        var spritemap:BitmapData;
+
+        lime.graphics.Image.loadFromBytes(compressedContent.spritemapBytes).onComplete(function(image) {
+            promise.complete(parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson));
+        });
+
+        return promise.future;
+    }
+
+    public static function parseCompressedAssetSync(bytes:Bytes):AnimationAtlas
+    {
+        var compressedContent = readCompressedContent(bytes);
+
+        var spritemap:BitmapData = BitmapData.fromImage(lime.graphics.Image.fromBytes(compressedContent.spritemapBytes));
+
+        return parseAssetSync(spritemap, compressedContent.spritemapJson, compressedContent.animationJson);
+    }
+
+    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String):AnimationAtlas
     {
         var animationAtlasData:ATLAS = Json.parse(spritemapJson);
         var rawAnimationData:Dynamic = Json.parse(animationJson);

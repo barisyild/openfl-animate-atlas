@@ -4,7 +4,7 @@
 ```
 Juggler.init(); //Initialize update animation class
 
-var animationAtlas:AnimationAtlas = AnimateAtlasAssetManager.loadAsset("assets/ninja-girl"); //Dummy loadAsset function, this function will change completely.
+var animationAtlas:AnimationAtlas = AnimateAtlasAssetManager.loadAssetSync("assets/ninja-girl"); //Dummy loadAsset function, this function will change completely.
 
 var tilemap:Tilemap = new Tilemap(stage.stageWidth, stage.stageHeight);
 tilemap.smoothing = false;

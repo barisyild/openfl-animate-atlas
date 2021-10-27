@@ -25,13 +25,13 @@ class AnimateAtlasAssetManager {
         var spritemapJson:String = Assets.getText(directory +  "spritemap1.json");
         var animationJson:String = Assets.getText(directory +  "Animation.json");
 
-        return AnimateAtlasParser.parseAsset(spritemap, spritemapJson, animationJson);
+        return AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
     }
 
-    public static function loadCompressedAssetSync(path:String):AnimationAtlas {
+    /*public static function loadCompressedAssetSync(path:String):AnimationAtlas {
         var bytes:Bytes = cast Assets.getBytes(path);
         return AnimateAtlasParser.parseCompressedAsset(bytes);
-    }
+    }*/
 
     //Load required library contents from storage/internet
     public static function loadAsset(directory:String, useCache:Null<Bool> = true):Future<AnimationAtlas> {
@@ -50,7 +50,7 @@ class AnimateAtlasAssetManager {
 
             if(count == 0)
             {
-                var atlas = AnimateAtlasParser.parseAsset(spritemap, spritemapJson, animationJson);
+                var atlas = AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
                 promise.complete(atlas);
             }
         }
@@ -79,12 +79,17 @@ class AnimateAtlasAssetManager {
         return promise.future;
     }
 
+    public static function loadCompressedAssetSync(path:String):AnimationAtlas {
+        return AnimateAtlasParser.parseCompressedAssetSync(Assets.getBytes(path));
+    }
+
     public static function loadCompressedAsset(path:String):Future<AnimationAtlas> {
         var promise = new Promise<AnimationAtlas>();
 
         Assets.loadBytes(path).onComplete (function (bytes:Bytes) {
-            var atlas = AnimateAtlasParser.parseCompressedAsset(bytes);
-            promise.complete(atlas);
+            AnimateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas:AnimationAtlas) {
+                promise.complete(atlas);
+            });
         }).onError(function (msg:Dynamic) {
             promise.error(msg);
         });
@@ -102,8 +107,10 @@ class AnimateAtlasAssetManager {
         var http = new haxe.Http(url);
 
         http.onBytes = function (bytes:Bytes) {
-            var atlas = AnimateAtlasParser.parseCompressedAsset(bytes);
-            promise.complete(atlas);
+            AnimateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas) {
+                promise.complete(atlas);
+            });
+
         }
         http.onError = function(msg:String) {
             promise.error(msg);
