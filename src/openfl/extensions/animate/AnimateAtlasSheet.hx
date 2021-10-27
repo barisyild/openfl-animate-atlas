@@ -20,10 +20,10 @@ import openfl.errors.ArgumentError;
 class AnimateAtlasSheet
 {
     public var frameRate(get, set) : Float;
+    public var tileset(default, null):AnimateAtlasTileset;
 
     public static inline var ASSET_TYPE : String = "animationAtlas";
 
-    private var _tileset:AnimateAtlasTileset;
     private var _symbolData : Map<String, SymbolData>;
     private var _symbolPool : Map<String, Array<AnimateSymbol>>;
     private var _frameRate : Float;
@@ -42,7 +42,7 @@ class AnimateAtlasSheet
         if (rawAnimationData  == null) throw new ArgumentError("data must not be null");
         if (spritemap == null) throw new ArgumentError("spritemap must not be null");
 
-        _tileset = new AnimateAtlasTileset(spritemap);
+        tileset = new AnimateAtlasTileset(spritemap);
 
         var data:openfl.extensions.animate.struct.AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
         parseData(data, atlas);
@@ -87,7 +87,7 @@ class AnimateAtlasSheet
     @:allow(openfl.extensions.animate)
     public inline function getId(name : String):Int
     {
-        return _tileset.__names.get(name);
+        return tileset.__names.get(name);
     }
 
     @:allow(openfl.extensions.animate)
@@ -121,7 +121,7 @@ class AnimateAtlasSheet
         for(SPRITE in atlas.ATLAS.SPRITES)
         {
             //TODO: Use rect pooling
-            _tileset.__names.set(SPRITE.SPRITE.name, _tileset.addRect(new Rectangle(SPRITE.SPRITE.x, SPRITE.SPRITE.y, SPRITE.SPRITE.w, SPRITE.SPRITE.h)));
+            tileset.__names.set(SPRITE.SPRITE.name, tileset.addRect(new Rectangle(SPRITE.SPRITE.x, SPRITE.SPRITE.y, SPRITE.SPRITE.w, SPRITE.SPRITE.h)));
         }
 
         var metaData = data.metadata;
@@ -136,7 +136,7 @@ class AnimateAtlasSheet
         // the actual symbol dictionary
         for (symbolData in data.symbolDictionary.symbols)
         {
-            _tileset.__names.set(symbolData.symbolName, _tileset.addRect(new Rectangle(0, 337, 257, 166)));
+            tileset.__names.set(symbolData.symbolName, tileset.addRect(new Rectangle(0, 337, 257, 166)));
             _symbolData[symbolData.symbolName] = preprocessSymbolData(symbolData);
         }
 
