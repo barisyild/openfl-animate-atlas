@@ -44,10 +44,6 @@ class AnimateAtlasSheet
 
         _tileset = new AnimateAtlasTileset(spritemap);
 
-        com.junkbyte.console.Cc.watch(spritemap, "spritemap");
-        com.junkbyte.console.Cc.watch(atlas, "atlas");
-        com.junkbyte.console.Cc.watch(rawAnimationData, "rawAnimationData");
-
         var data:openfl.extensions.animate.struct.AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
         parseData(data, atlas);
 
