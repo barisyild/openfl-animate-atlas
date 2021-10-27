@@ -1,14 +1,21 @@
 package openfl.extensions.animate.display;
 
+import openfl.extensions.animate.data.ColorData;
+import openfl.extensions.animate.data.Matrix3DData;
+import openfl.extensions.animate.data.ElementData;
+import openfl.extensions.animate.data.SymbolInstanceData;
+import openfl.extensions.animate.data.LayerData;
+import openfl.extensions.animate.data.LayerFrameData;
+import openfl.extensions.animate.data.SymbolData;
+import openfl.extensions.animate.type.LoopMode;
 import haxe.Constraints.Function;
 import openfl.extensions.animate.display.AnimateAtlasTile;
 import openfl.display.Tile;
 import openfl.display.TileContainer;
 import openfl.extensions.animate.display.AnimateAtlasTileContainer;
 import openfl.extensions.animate.utils.MathUtil;
-import openfl.extensions.animate.AnimationAtlasData;
 import openfl.display.BitmapData;
-import openfl.extensions.animate.SymbolType;
+import openfl.extensions.animate.type.SymbolType;
 import openfl.filters.ColorMatrixFilter;
 import openfl.display.FrameLabel;
 import openfl.errors.ArgumentError;
@@ -19,8 +26,6 @@ class AnimateSymbol extends TileContainer
 {
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
-    public var type(get, set):String;
-    public var loopMode(get, set):String;
     public var symbolName(get, never):String;
     public var numLayers(get, never):Int;
     public var numFrames(get, never):Int;
@@ -29,14 +34,14 @@ class AnimateSymbol extends TileContainer
     public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
 
     public var name:String;
+    public var type:SymbolType;
+    public var loopMode:LoopMode;
 
     private var _cumulatedTime : Float = 0.0;
     private var _playing:Bool = true;
     private var _data : SymbolData;
-    private var _atlas : AnimationAtlas;
+    private var _atlas : AnimateAtlasSheet;
     private var _symbolName : String;
-    private var _type : String;
-    private var _loopMode : String;
     private var _currentFrame : Int = 0;
     private var _composedFrame : Int = 0;
     private var _bitmap:AnimateAtlasTile;
@@ -49,8 +54,8 @@ class AnimateSymbol extends TileContainer
     private static var ALPHA_MODES = ["Alpha", "Advanced", "AD"];
     private static var sMatrix : Matrix = new Matrix();
 
-    @:access(openfl.extensions.animate.AnimationAtlas)
-    public function new(data:SymbolData, atlas:AnimationAtlas)
+    @:access(openfl.extensions.animate.AnimateAtlasSheet)
+    public function new(data:SymbolData, atlas:AnimateAtlasSheet)
     {
         super();
         _data = data;
@@ -60,8 +65,8 @@ class AnimateSymbol extends TileContainer
         _numFrames = getNumFrames();
         _frameLabels = getFrameLabels();
         _symbolName = data.symbolName;
-        _type = SymbolType.GRAPHIC;
-        _loopMode = LoopMode.LOOP;
+        type = SymbolType.GRAPHIC;
+        loopMode = LoopMode.LOOP;
         _frameScripts = new Map<Int, Function>();
         _bitmap = new AnimateAtlasTile();
 
@@ -148,7 +153,7 @@ class AnimateSymbol extends TileContainer
          *  forward, though (recursively). */
     /*public function nextFrame():Void
     {
-        if (_loopMode != LoopMode.SINGLE_FRAME)
+        if (loopMode != LoopMode.SINGLE_FRAME)
             currentFrame += 1;
 
         nextFrame_MovieClips();
@@ -157,7 +162,7 @@ class AnimateSymbol extends TileContainer
     /** Moves all movie clips ahead one frame, recursively. */
     public function nextFrame_MovieClips():Void
     {
-        if (_type == SymbolType.MOVIE_CLIP && _playing)
+        if (type == SymbolType.MOVIE_CLIP && _playing)
             currentFrame += 1;
 
         for (l in 0..._numLayers)
@@ -309,18 +314,18 @@ class AnimateSymbol extends TileContainer
         }
     }
 
-    private function setLoop(data:String):Void
+    private function setLoop(data:Null<LoopMode>):Void
     {
         if (data != null)
-            _loopMode = LoopMode.parse(data);
+            loopMode = data;
         else
-            _loopMode = LoopMode.LOOP;
+            loopMode = LoopMode.LOOP;
     }
 
-    private inline function setType(data:String):Void
+    private inline function setType(data:Null<SymbolType>):Void
     {
         if (data != null)
-            _type = SymbolType.parse(data);
+            type = data;
     }
 
     private function getNumFrames() : Int
@@ -445,7 +450,7 @@ class AnimateSymbol extends TileContainer
         while (value < 0)
             value += _numFrames;
 
-        if (_loopMode == LoopMode.PLAY_ONCE)
+        if (loopMode == LoopMode.PLAY_ONCE)
             _currentFrame = Std.int(MathUtil.clamp(value, 0, _numFrames - 1));
         else
             _currentFrame = Std.int(Math.abs(value % _numFrames));
@@ -453,34 +458,6 @@ class AnimateSymbol extends TileContainer
         if (_composedFrame != _currentFrame)
             update();
 
-        return value;
-    }
-
-    private function get_type() : String
-    {
-        return _type;
-    }
-
-    private function set_type(value : String) : String
-    {
-        if (SymbolType.isValid(value))
-            _type = value;
-        else
-            throw new ArgumentError("Invalid symbol type: " + value);
-        return value;
-    }
-
-    private function get_loopMode() : String
-    {
-        return _loopMode;
-    }
-
-    private function set_loopMode(value : String) : String
-    {
-        if (LoopMode.isValid(value))
-            _loopMode = value;
-        else
-            throw new ArgumentError("Invalid loop mode: " + value);
         return value;
     }
 

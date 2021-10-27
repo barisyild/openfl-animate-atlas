@@ -1,5 +1,6 @@
 package openfl.extensions.animate.parser;
 
+import haxe.Exception;
 import lime.app.Promise;
 import openfl.utils.Future;
 import lime._internal.format.Deflate;
@@ -45,22 +46,30 @@ class AnimateAtlasParser {
         }
     }
 
-    public static function parseCompressedAsset(bytes:Bytes):Future<AnimationAtlas>
+    public static function parseCompressedAsset(bytes:Bytes):Future<AnimateAtlasSheet>
     {
-        var promise:Promise<AnimationAtlas> = new Promise();
+        var promise:Promise<AnimateAtlasSheet> = new Promise();
 
         var compressedContent = readCompressedContent(bytes);
 
         var spritemap:BitmapData;
 
         lime.graphics.Image.loadFromBytes(compressedContent.spritemapBytes).onComplete(function(image) {
-            promise.complete(parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson));
+            try
+            {
+                var animationAtlas = parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson);
+                promise.complete(animationAtlas);
+            }
+            catch(e:Exception)
+            {
+                promise.error(e);
+            }
         });
 
         return promise.future;
     }
 
-    public static function parseCompressedAssetSync(bytes:Bytes):AnimationAtlas
+    public static function parseCompressedAssetSync(bytes:Bytes):AnimateAtlasSheet
     {
         var compressedContent = readCompressedContent(bytes);
 
@@ -69,11 +78,11 @@ class AnimateAtlasParser {
         return parseAssetSync(spritemap, compressedContent.spritemapJson, compressedContent.animationJson);
     }
 
-    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String):AnimationAtlas
+    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String):AnimateAtlasSheet
     {
-        var animationAtlasData:ATLAS = Json.parse(spritemapJson);
+        var animationAtlasData:openfl.extensions.animate.struct.ATLAS = Json.parse(spritemapJson);
         var rawAnimationData:Dynamic = Json.parse(animationJson);
 
-        return new AnimationAtlas(spritemap, animationAtlasData, rawAnimationData);
+        return new AnimateAtlasSheet(spritemap, animationAtlasData, rawAnimationData);
     }
 }

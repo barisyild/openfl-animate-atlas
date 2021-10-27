@@ -1,4 +1,4 @@
-package openfl.extensions.animate;
+package openfl.extensions.animate.struct;
 
 typedef ATLAS = {
     var ATLAS:{

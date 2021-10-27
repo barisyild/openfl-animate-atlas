@@ -1,4 +1,4 @@
-package openfl.extensions.animate;
+package openfl.extensions.animate.struct;
 
 typedef AnimationAtlasData =
 {
@@ -93,7 +93,6 @@ typedef ColorData =
     ?greenMultiplier: Float,
     ?blueMultiplier: Float,
     ?alphaMultiplier: Float,
-
     ?redOffset: Float,
     ?greenOffset: Float,
     ?blueOffset: Float,

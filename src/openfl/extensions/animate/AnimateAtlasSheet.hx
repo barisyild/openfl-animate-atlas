@@ -1,15 +1,23 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.data.Matrix3DData;
+import openfl.extensions.animate.data.PointData;
+import openfl.extensions.animate.data.SymbolInstanceData;
+import openfl.extensions.animate.type.LoopMode;
+import openfl.extensions.animate.type.SymbolType;
+import openfl.extensions.animate.data.ElementData;
+import openfl.extensions.animate.data.LayerFrameData;
+import openfl.extensions.animate.data.SymbolTimelineData;
+import openfl.extensions.animate.data.LayerData;
+import openfl.extensions.animate.data.SymbolData;
 import openfl.extensions.animate.display.AnimateSymbol;
 import String;
 import flash.geom.Rectangle;
 import openfl.extensions.animate.display.AnimateAtlasTileset;
-import openfl.extensions.animate.AnimationAtlasData;
-import openfl.extensions.animate.ATLAS;
 import openfl.display.BitmapData;
 import openfl.errors.ArgumentError;
 
-class AnimationAtlas
+class AnimateAtlasSheet
 {
     public var frameRate(get, set) : Float;
 
@@ -29,14 +37,18 @@ class AnimationAtlas
         m30: 0, m31: 0, m32: 0, m33: 1
     };
 
-    public function new(spritemap:BitmapData, atlas:ATLAS, rawAnimationData:Dynamic)
+    public function new(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic)
     {
         if (rawAnimationData  == null) throw new ArgumentError("data must not be null");
         if (spritemap == null) throw new ArgumentError("spritemap must not be null");
 
         _tileset = new AnimateAtlasTileset(spritemap);
 
-        var data:AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
+        com.junkbyte.console.Cc.watch(spritemap, "spritemap");
+        com.junkbyte.console.Cc.watch(atlas, "atlas");
+        com.junkbyte.console.Cc.watch(rawAnimationData, "rawAnimationData");
+
+        var data:openfl.extensions.animate.struct.AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
         parseData(data, atlas);
 
         _symbolPool = new Map<String, Array<AnimateSymbol>>();
@@ -108,7 +120,7 @@ class AnimationAtlas
 
     // helpers
 
-    private function parseData(data : AnimationAtlasData, atlas:ATLAS) : Void
+    private function parseData(data:openfl.extensions.animate.struct.AnimationAtlasData, atlas:openfl.extensions.animate.struct.ATLAS) : Void
     {
         for(SPRITE in atlas.ATLAS.SPRITES)
         {
@@ -138,13 +150,16 @@ class AnimationAtlas
         _symbolData[_defaultSymbolName] = defaultSymbolData;
 
         // a purely internal symbol for bitmaps - simplifies their handling
-        var symbolData:SymbolData = {symbolName: AnimateSymbol.BITMAP_SYMBOL_NAME};
-        symbolData.timeline = {layers: []};
+        var symbolData:SymbolData = new SymbolData();
+        symbolData.symbolName = AnimateSymbol.BITMAP_SYMBOL_NAME;
+        symbolData.timeline = new SymbolTimelineData();
+        symbolData.timeline.layers = [];
         _symbolData[AnimateSymbol.BITMAP_SYMBOL_NAME] = symbolData;
     }
 
-    private static function preprocessSymbolData(symbolData : SymbolData) : SymbolData
+    private static function preprocessSymbolData(symbolData:openfl.extensions.animate.struct.AnimationAtlasData.SymbolData) : SymbolData
     {
+        var symbolData:SymbolData = SymbolData.createFromAnimationAtlasData(symbolData);
         var timeLineData:SymbolTimelineData  = symbolData.timeline;
         var layerDates:Array<LayerData> = timeLineData.layers;
 
@@ -179,18 +194,21 @@ class AnimationAtlas
 
                     if (element.atlasSpriteInstance != null)
                     {
-                        element = elements[e] = {
-                            symbolInstance: {
-                                symbolName: AnimateSymbol.BITMAP_SYMBOL_NAME,
-                                instanceName: "InstName",
-                                bitmap: element.atlasSpriteInstance,
-                                symbolType: SymbolType.GRAPHIC,
-                                firstFrame: 0,
-                                loop: LoopMode.LOOP,
-                                transformationPoint: { x: 0, y: 0 },
-                                matrix3D: STD_MATRIX3D_DATA
-                            }
-                        }
+                        element.symbolInstance = new SymbolInstanceData();
+                        element.symbolInstance.symbolName = AnimateSymbol.BITMAP_SYMBOL_NAME;
+                        element.symbolInstance.instanceName = "InstName";
+                        element.symbolInstance.bitmap = element.atlasSpriteInstance;
+                        element.symbolInstance.symbolType = SymbolType.GRAPHIC;
+                        element.symbolInstance.firstFrame = 0;
+                        element.symbolInstance.loop = LoopMode.LOOP;
+                        element.symbolInstance.transformationPoint = new PointData(0, 0);
+                        element.symbolInstance.matrix3D = new Matrix3DData();
+                        element.symbolInstance.matrix3D.m00 = 1;
+                        element.symbolInstance.matrix3D.m01 = 0;
+                        element.symbolInstance.matrix3D.m10 = 0;
+                        element.symbolInstance.matrix3D.m11 = 1;
+                        element.symbolInstance.matrix3D.m30 = 0;
+                        element.symbolInstance.matrix3D.m31 = 0;
                     }
 
                     // not needed - remove decomposed matrix to save some memory

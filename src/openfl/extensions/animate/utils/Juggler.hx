@@ -1,4 +1,4 @@
-package openfl.extensions.animate;
+package openfl.extensions.animate.utils;
 
 import openfl.extensions.animate.display.AnimateAtlasTileContainer;
 import openfl.extensions.animate.display.AnimateSymbol;
