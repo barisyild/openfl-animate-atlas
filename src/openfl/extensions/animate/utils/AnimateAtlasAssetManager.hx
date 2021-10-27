@@ -18,14 +18,14 @@ import haxe.Json;
 class AnimateAtlasAssetManager {
 
     //Read content from memory
-    public static function loadAssetSync(directory:String):AnimateAtlasSheet {
+    public static function loadAssetSync(directory:String, template:Class<AnimateAtlasSheet> = null):AnimateAtlasSheet {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
         var spritemap:BitmapData = Assets.getBitmapData(directory +  "spritemap1.png");
         var spritemapJson:String = Assets.getText(directory +  "spritemap1.json");
         var animationJson:String = Assets.getText(directory +  "Animation.json");
 
-        return AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
+        return AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson, template);
     }
 
     /*public static function loadCompressedAssetSync(path:String):AnimationAtlas {
@@ -34,7 +34,7 @@ class AnimateAtlasAssetManager {
     }*/
 
     //Load required library contents from storage/internet
-    public static function loadAsset(directory:String, useCache:Null<Bool> = true):Future<AnimateAtlasSheet> {
+    public static function loadAsset(directory:String, useCache:Null<Bool> = true, template:Class<AnimateAtlasSheet> = null):Future<AnimateAtlasSheet> {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
         var promise = new Promise<AnimateAtlasSheet>();
@@ -50,7 +50,7 @@ class AnimateAtlasAssetManager {
 
             if(count == 0)
             {
-                var atlas = AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
+                var atlas = AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson, template);
                 promise.complete(atlas);
             }
         }
@@ -79,15 +79,15 @@ class AnimateAtlasAssetManager {
         return promise.future;
     }
 
-    public static function loadCompressedAssetSync(path:String):AnimateAtlasSheet {
-        return AnimateAtlasParser.parseCompressedAssetSync(Assets.getBytes(path));
+    public static function loadCompressedAssetSync(path:String, template:Class<AnimateAtlasSheet> = null):AnimateAtlasSheet {
+        return AnimateAtlasParser.parseCompressedAssetSync(Assets.getBytes(path), template);
     }
 
-    public static function loadCompressedAsset(path:String):Future<AnimateAtlasSheet> {
+    public static function loadCompressedAsset(path:String, template:Class<AnimateAtlasSheet> = null):Future<AnimateAtlasSheet> {
         var promise = new Promise<AnimateAtlasSheet>();
 
         Assets.loadBytes(path).onComplete (function (bytes:Bytes) {
-            AnimateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas:AnimateAtlasSheet) {
+            AnimateAtlasParser.parseCompressedAsset(bytes, template).onComplete(function (atlas:AnimateAtlasSheet) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
                 promise.error(msg);
@@ -103,13 +103,13 @@ class AnimateAtlasAssetManager {
 
     //TODO: implement requestAsset
 
-    public static function requestCompressedAsset(url:String):Future<AnimateAtlasSheet> {
+    public static function requestCompressedAsset(url:String, template:Class<AnimateAtlasSheet> = null):Future<AnimateAtlasSheet> {
         var promise = new Promise<AnimateAtlasSheet>();
 
         var http = new haxe.Http(url);
 
         http.onBytes = function (bytes:Bytes) {
-            AnimateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas) {
+            AnimateAtlasParser.parseCompressedAsset(bytes, template).onComplete(function (atlas) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
                 promise.error(msg);
