@@ -278,10 +278,7 @@ class AnimateSymbol extends TileContainer
 
             _bitmap.id = id;
 
-            _bitmap.x = data.decomposedMatrix.position.x;
-            _bitmap.y = data.decomposedMatrix.position.y;
-            _bitmap.scaleX = data.decomposedMatrix.scaling.x;
-            _bitmap.scaleY = data.decomposedMatrix.scaling.y;
+            _bitmap.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
         }
         else if (_bitmap != null)
         {
