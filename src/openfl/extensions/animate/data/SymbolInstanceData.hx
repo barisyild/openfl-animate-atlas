@@ -9,7 +9,7 @@ import openfl.extensions.animate.type.SymbolType;
 class SymbolInstanceData {
     public var symbolName: String;
     public var instanceName: String;
-    public var bitmap: Dynamic; //todo: fix this
+    public var bitmap:AtlasSpriteInstance;
     public var symbolType:SymbolType;
     public var transformationPoint:PointData;
     public var matrix3D: Matrix3DData;

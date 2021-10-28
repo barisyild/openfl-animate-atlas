@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.extensions.animate.data.AtlasSpriteInstance;
 import openfl.extensions.animate.data.ColorData;
 import openfl.extensions.animate.data.Matrix3DData;
 import openfl.extensions.animate.data.ElementData;
@@ -267,7 +268,7 @@ class AnimateSymbol extends TileContainer
     }
 
     @:access(openfl.extensions.animate.display.AnimateAtlasTile)
-    public inline function setBitmap(data:Dynamic):Void
+    public inline function setBitmap(data:AtlasSpriteInstance):Void
     {
         if (data != null)
         {
@@ -277,14 +278,10 @@ class AnimateSymbol extends TileContainer
 
             _bitmap.id = id;
 
-            if(data.position != null)
-            {
-                _bitmap.x = data.position.x;
-                _bitmap.y = data.position.y;
-            }else{
-                _bitmap.x = data.decomposedMatrix.position.x;
-                _bitmap.y = data.decomposedMatrix.position.y;
-            }
+            _bitmap.x = data.decomposedMatrix.position.x;
+            _bitmap.y = data.decomposedMatrix.position.y;
+            _bitmap.scaleX = data.decomposedMatrix.scaling.x;
+            _bitmap.scaleY = data.decomposedMatrix.scaling.y;
         }
         else if (_bitmap != null)
         {

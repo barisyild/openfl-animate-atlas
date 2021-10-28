@@ -65,9 +65,14 @@ typedef LayerFrameData =
 
 typedef ElementData =
 {
-    ?atlasSpriteInstance:Dynamic,
+    ?atlasSpriteInstance:AtlasSpriteInstance,
     ?symbolInstance: SymbolInstanceData
+}
 
+typedef AtlasSpriteInstance = {
+    name:String,
+    ?matrix3D:Matrix3DData,
+    ?decomposedMatrix:Decomposed3DData
 }
 
 typedef SymbolInstanceData =

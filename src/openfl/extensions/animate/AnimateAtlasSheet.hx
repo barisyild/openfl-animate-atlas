@@ -1,5 +1,6 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.data.AtlasSpriteInstance;
 import openfl.extensions.animate.data.Matrix3DData;
 import openfl.extensions.animate.data.PointData;
 import openfl.extensions.animate.data.SymbolInstanceData;
