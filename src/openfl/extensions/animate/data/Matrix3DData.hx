@@ -39,7 +39,7 @@ class Matrix3DData {
         matrix3DData.m30 = data.m30;
         matrix3DData.m31 = data.m31;
         matrix3DData.m32 = data.m32;
-        matrix3DData.m33 =data. m33;
+        matrix3DData.m33 = data.m33;
         return matrix3DData;
     }
 }
