@@ -278,7 +278,11 @@ class AnimateSymbol extends TileContainer
 
             _bitmap.id = id;
 
-            _bitmap.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
+            if(_bitmap.matrix.a != data.matrix3D.m00 || _bitmap.matrix.b != data.matrix3D.m01 || _bitmap.matrix.c != data.matrix3D.m10 || _bitmap.matrix.d != data.matrix3D.m11 || _bitmap.matrix.tx != data.matrix3D.m30 || _bitmap.matrix.ty != data.matrix3D.m31)
+            {
+                _bitmap.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
+                _bitmap.__setRenderDirty();
+            }
         }
         else if (_bitmap != null)
         {
