@@ -71,8 +71,14 @@ typedef ElementData =
 
 typedef AtlasSpriteInstance = {
     name:String,
+    ?position:Position2DData,
     ?matrix3D:Matrix3DData,
     ?decomposedMatrix:Decomposed3DData
+}
+
+typedef Position2DData = {
+    x:Float,
+    y:Float
 }
 
 typedef SymbolInstanceData =
