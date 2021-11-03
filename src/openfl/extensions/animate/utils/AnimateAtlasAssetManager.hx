@@ -1,6 +1,10 @@
 package openfl.extensions.animate.utils;
 
-import flash.net.URLRequest;
+import openfl.events.IOErrorEvent;
+import openfl.events.Event;
+import openfl.net.URLLoaderDataFormat;
+import openfl.net.URLLoader;
+import openfl.net.URLRequest;
 import openfl.extensions.animate.parser.AnimateAtlasParser;
 import openfl.display.Loader;
 import openfl.utils.ByteArray;
@@ -106,21 +110,20 @@ class AnimateAtlasAssetManager {
     public static function requestCompressedAsset(url:String, template:Class<AnimateAtlasSheet> = null):Future<AnimateAtlasSheet> {
         var promise = new Promise<AnimateAtlasSheet>();
 
-        var http = new haxe.Http(url);
-
-        http.onBytes = function (bytes:Bytes) {
+        var urlLoader:URLLoader = new URLLoader();
+        urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+        urlLoader.addEventListener(Event.COMPLETE, function (e:Event) {
+            var bytes:Bytes = urlLoader.data;
             AnimateAtlasParser.parseCompressedAsset(bytes, template).onComplete(function (atlas) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
                 promise.error(msg);
             });
-
-        }
-        http.onError = function(msg:String) {
-            promise.error(msg);
-        }
-
-        http.request(false);
+        });
+        urlLoader.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent) {
+            promise.error(e.errorID);
+        });
+        urlLoader.load(new URLRequest(url));
 
         return promise.future;
     }
