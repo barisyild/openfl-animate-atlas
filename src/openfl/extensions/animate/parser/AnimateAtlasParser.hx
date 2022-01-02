@@ -1,5 +1,6 @@
 package openfl.extensions.animate.parser;
 
+import haxe.Constraints.Constructible;
 import haxe.Exception;
 import lime.app.Promise;
 import openfl.utils.Future;
@@ -10,8 +11,16 @@ import haxe.io.Bytes;
 import haxe.Json;
 import openfl.display.BitmapData;
 
-class AnimateAtlasParser {
-    public static inline function readCompressedContent(bytes:Bytes):{spritemapBytes:Bytes, spritemapJson:String, animationJson:String}
+@:generic
+class AnimateAtlasParser<T> {
+
+    private var _typeInstance:Class<T>;
+
+    public function new(typeInstance:Class<T>) {
+        _typeInstance = typeInstance;
+    }
+
+    public function readCompressedContent(bytes:Bytes):{spritemapBytes:Bytes, spritemapJson:String, animationJson:String}
     {
         var spritemapBytes:Bytes = null;
         var spritemapJson:String = null;
@@ -46,9 +55,9 @@ class AnimateAtlasParser {
         }
     }
 
-    public static function parseCompressedAsset(bytes:Bytes, template:Class<AnimateAtlasSheet> = null):Future<AnimateAtlasSheet>
+    public function parseCompressedAsset(bytes:Bytes):Future<T>
     {
-        var promise:Promise<AnimateAtlasSheet> = new Promise();
+        var promise:Promise<T> = new Promise();
 
         var compressedContent = readCompressedContent(bytes);
 
@@ -57,7 +66,7 @@ class AnimateAtlasParser {
         lime.graphics.Image.loadFromBytes(compressedContent.spritemapBytes).onComplete(function(image) {
             try
             {
-                var animationAtlas = parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson, template);
+                var animationAtlas = parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson);
                 promise.complete(animationAtlas);
             }
             catch(e:Exception)
@@ -69,23 +78,20 @@ class AnimateAtlasParser {
         return promise.future;
     }
 
-    public static function parseCompressedAssetSync(bytes:Bytes, template, template:Class<AnimateAtlasSheet> = null):AnimateAtlasSheet
+    public function parseCompressedAssetSync(bytes:Bytes):T
     {
         var compressedContent = readCompressedContent(bytes);
 
         var spritemap:BitmapData = BitmapData.fromImage(lime.graphics.Image.fromBytes(compressedContent.spritemapBytes));
 
-        return parseAssetSync(spritemap, compressedContent.spritemapJson, compressedContent.animationJson, template);
+        return parseAssetSync(spritemap, compressedContent.spritemapJson, compressedContent.animationJson);
     }
 
-    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String, template:Class<AnimateAtlasSheet> = null):AnimateAtlasSheet
+    public function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String):T
     {
-        if(template == null)
-            template = AnimateAtlasSheet;
-
         var animationAtlasData:openfl.extensions.animate.struct.ATLAS = Json.parse(spritemapJson);
         var rawAnimationData:Dynamic = Json.parse(animationJson);
 
-        return Type.createInstance(template, [spritemap, animationAtlasData, rawAnimationData]);
+        return Type.createInstance(_typeInstance, [spritemap, animationAtlasData, rawAnimationData]);
     }
 }

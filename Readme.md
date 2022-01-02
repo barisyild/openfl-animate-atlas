@@ -1,10 +1,12 @@
 ## WARNING: **Under Development**, API CAN BE CHANGED IN FUTURE!
 ### Tested on Adobe Animate 2020
 
-```
+```haxe
 Juggler.init(); //Initialize update animation class
-
-var animationAtlas:AnimationAtlas = AnimateAtlasAssetManager.loadAssetSync("assets/ninja-girl"); //Dummy loadAsset function, this function will change completely.
+    
+var animateAtlasAssetManager:AnimateAtlasAssetManager<AnimateAtlasSheet> = new AnimateAtlasAssetManager<AnimateAtlasSheet>(AnimateAtlasSheet);
+    
+var animationAtlas:AnimateAtlasSheet = animateAtlasAssetManager.loadAssetSync("assets/ninja-girl"); //Dummy loadAsset function, this function will change completely.
 
 var tilemap:Tilemap = new Tilemap(stage.stageWidth, stage.stageHeight);
 tilemap.smoothing = false;
