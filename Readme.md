@@ -21,3 +21,6 @@ Juggler.add(animation); //Add animation to animation class, make sure to call "J
 //Note: I plan to delete Juggler in the long run so anyone can create their own animation update solution.
 ```
 
+Benchmark: http://openfl-animate-atlas.surge.sh/
+
+**Important: Optimized atlases are not supported!**
