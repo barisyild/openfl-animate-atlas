@@ -2,7 +2,7 @@
   "name": "openfl-animate-atlas",
   "license": "MIT",
   "tags": ["OpenFL","haxe","port","Adobe","Animate","Atlas","Tilemap"],
-  "description": "Adobe Animate Atlas animation for OpenFL Tilemap",
+  "description": "Adobe Animate Atlas Player for OpenFL Tilemap",
   "contributors": ["barisyild"],
   "releasenote": "0.0.1",
   "version": "0.0.1",
