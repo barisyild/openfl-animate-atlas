@@ -50,9 +50,9 @@ class AnimateAtlasAssetManager<T> {
         var promise = new Promise<T>();
         var count = 3;
 
-        var spritemap:BitmapData;
-        var spritemapJson:String;
-        var animationJson:String;
+        var spritemap:BitmapData = null;
+        var spritemapJson:String = null;
+        var animationJson:String = null;
 
         function tryProcess():Void
         {
