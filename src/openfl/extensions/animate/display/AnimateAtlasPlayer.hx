@@ -1,78 +1,70 @@
 package openfl.extensions.animate.display;
 
-import openfl.extensions.animate.data.AtlasSpriteInstance;
+import openfl.extensions.animate.data.LayerData;
+import openfl.extensions.animate.utils.MathUtil;
+import openfl.geom.Matrix;
 import openfl.extensions.animate.data.ColorData;
 import openfl.extensions.animate.data.Matrix3DData;
-import openfl.extensions.animate.data.ElementData;
+import openfl.extensions.animate.data.AtlasSpriteInstance;
 import openfl.extensions.animate.data.SymbolInstanceData;
-import openfl.extensions.animate.data.LayerData;
+import openfl.extensions.animate.data.ElementData;
 import openfl.extensions.animate.data.LayerFrameData;
-import openfl.extensions.animate.data.SymbolData;
-import openfl.extensions.animate.type.LoopMode;
-import haxe.Constraints.Function;
-import openfl.extensions.animate.display.AnimateAtlasTile;
 import openfl.display.Tile;
 import openfl.display.TileContainer;
-import openfl.extensions.animate.display.AnimateAtlasTileContainer;
-import openfl.extensions.animate.utils.MathUtil;
-import openfl.display.BitmapData;
+import openfl.extensions.animate.type.LoopMode;
 import openfl.extensions.animate.type.SymbolType;
 import openfl.filters.ColorMatrixFilter;
 import openfl.display.FrameLabel;
-import openfl.errors.ArgumentError;
-import openfl.errors.Error;
-import openfl.geom.Matrix;
+import openfl.extensions.animate.data.SymbolData;
+import openfl.utils.Function;
 
-class AnimateSymbol extends TileContainer
-{
-    public var currentLabel(get, never):String;
-    public var currentFrame(get, set):Int;
-    public var symbolName(get, never):String;
-    public var numLayers(get, never):Int;
-    public var numFrames(get, never):Int;
-    public var frameRate(get, never):Float;
-
+@:access(openfl.display.TileContainer)
+@:access(openfl.display.Tile)
+class AnimateAtlasPlayer {
     public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
 
-    public var name:String;
-    public var type:SymbolType;
-    public var loopMode:LoopMode;
-
-    private var _cumulatedTime : Float = 0.0;
-    private var _playing:Bool = true;
-    private var _data : SymbolData;
-    private var _atlas : AnimateAtlasSheet;
-    private var _symbolName : String;
-    private var _currentFrame : Int = 0;
-    private var _composedFrame : Int = 0;
-    private var _bitmap:AnimateAtlasTile;
-    private var _numFrames : Int = 0;
-    private var _numLayers : Int = 0;
-    private var _frameLabels : Array<FrameLabel>;
-    private var _colorTransform:ColorMatrixFilter;
-    private var _frameScripts:Map<Int, Function>;
-
     private static var ALPHA_MODES = ["Alpha", "Advanced", "AD"];
-    private static var sMatrix : Matrix = new Matrix();
+    private static var sMatrix:Matrix = new Matrix();
 
-    @:access(openfl.extensions.animate.AnimateAtlasSheet)
-    public function new(data:SymbolData, atlas:AnimateAtlasSheet)
-    {
-        super();
-        _data = data;
-        _atlas = atlas;
-        _composedFrame = -1;
-        _numLayers = data.timeline.layers.length;
-        _numFrames = getNumFrames();
-        _frameLabels = getFrameLabels();
-        _symbolName = data.symbolName;
+    private var _currentFrame : Int = 0;
+    public var currentFrame(get, set):Int;
+    public var currentLabel(get, never):String;
+    public var frameRate(get, never):Float;
+
+    private var type:SymbolType;
+    private var loopMode:LoopMode;
+
+    private var data : SymbolData;
+    private var atlas : AnimateAtlasSheet;
+    private var frameScripts:Map<Int, Function>;
+    private var cumulatedTime : Float = 0.0;
+    private var playing:Bool = true;
+    private var symbolName : String;
+    private var composedFrame : Int = 0;
+    private var numFrames : Int = 0;
+    private var numLayers : Int = 0;
+    private var frameLabels : Array<FrameLabel>;
+    private var colorTransform:ColorMatrixFilter;
+
+    private var container:TileContainer;
+    private var display:Tile;
+
+
+    public function new(data:SymbolData, atlas:AnimateAtlasSheet, container:TileContainer, display:Tile) {
+        this.data = data;
+        this.atlas = atlas;
+        this.container = container;
+        this.display = display;
+
+        frameScripts = new Map<Int, Function>();
+
+        composedFrame = -1;
+        numLayers = data.timeline.layers.length;
+        numFrames = getNumFrames();
+        frameLabels = getFrameLabels();
+        symbolName = data.symbolName;
         type = SymbolType.GRAPHIC;
         loopMode = LoopMode.LOOP;
-        _frameScripts = new Map<Int, Function>();
-        _bitmap = new AnimateAtlasTile();
-
-        addTile(_bitmap);
-        _bitmap.visible = false;
 
         createLayers();
         update();
@@ -80,12 +72,12 @@ class AnimateSymbol extends TileContainer
 
     public function addFrameScript(frame:Int, func:Function):Void
     {
-        _frameScripts.set(frame, func);
+        frameScripts.set(frame, func);
     }
 
     public function removeFrameScript(frame:Int, func:Function):Void
     {
-        _frameScripts.remove(frame);
+        frameScripts.remove(frame);
     }
 
     public function gotoAndPlay(frame:Dynamic)
@@ -102,24 +94,24 @@ class AnimateSymbol extends TileContainer
 
     public function play():Void
     {
-        _playing = true;
+        playing = true;
     }
 
     public function stop():Void
     {
-        _playing = false;
+        playing = false;
     }
 
-    public function getSymbolByName(name:String):AnimateSymbol
+    public function getSymbolByName(name:String):AnimateAtlasTile
     {
-        for (l in 0..._numLayers)
+        for (l in 0...numLayers)
         {
             var layer:TileContainer = getLayer(l);
             var numElements:Int = layer.numTiles;
 
             for (e in 0...numElements)
             {
-                if(cast(layer.getTileAt(e),AnimateSymbol).name == name)
+                if(cast(layer.getTileAt(e),AnimateAtlasTile).name == name)
                     return cast layer.getTileAt(e);
             }
         }
@@ -129,21 +121,21 @@ class AnimateSymbol extends TileContainer
 
     public function reset():Void
     {
-        alpha = 1.0;
-        _currentFrame = 0;
-        _composedFrame = -1;
+        container.alpha = 1.0;
+        currentFrame = 0;
+        composedFrame = -1;
     }
 
     public function updateFrame(delta:Float):Void
     {
-        var frameRate : Float = _atlas.frameRate;
-        var prevTime : Float = _cumulatedTime;
+        var frameRate : Float = atlas.frameRate;
+        var prevTime : Float = cumulatedTime;
 
-        _cumulatedTime += delta;
+        cumulatedTime += delta;
 
-        if (Std.int(prevTime * frameRate) != Std.int(_cumulatedTime * frameRate))
+        if (Std.int(prevTime * frameRate) != Std.int(cumulatedTime * frameRate))
         {
-            if(_playing)
+            if(playing)
                 currentFrame += 1;
             nextFrame_MovieClips();
         }
@@ -163,47 +155,50 @@ class AnimateSymbol extends TileContainer
     /** Moves all movie clips ahead one frame, recursively. */
     public function nextFrame_MovieClips():Void
     {
-        if (type == SymbolType.MOVIE_CLIP && _playing)
+        if (type == SymbolType.MOVIE_CLIP && playing)
             currentFrame += 1;
 
-        for (l in 0..._numLayers)
+        for (l in 0...numLayers)
         {
             var layer:TileContainer = getLayer(l);
             var numElements:Int = layer.numTiles;
 
             for (e in 0...numElements)
-                cast(layer.getTileAt(e), AnimateSymbol).nextFrame_MovieClips();
+            {
+                var layerTile:AnimateAtlasTile = cast layer.getTileAt(e);
+                layerTile.nextFrame_MovieClips();
+            }
         }
     }
 
     public function update():Void
     {
-        for (i in 0..._numLayers)
+        for (i in 0...numLayers)
             updateLayer(i);
 
-        _composedFrame = _currentFrame;
+        composedFrame = currentFrame;
     }
 
     private function updateLayer(layerIndex:Int):Void
     {
         var layer:TileContainer = getLayer(layerIndex);
-        var frameData:LayerFrameData = getFrameData(layerIndex, _currentFrame);
+        var frameData:LayerFrameData = getFrameData(layerIndex, currentFrame);
         var elements:Array<ElementData> = frameData != null ? frameData.elements : null;
         var numElements:Int = elements != null ? elements.length : 0;
 
-        var oldSymbol:AnimateSymbol = null;
+        var oldSymbol:AnimateAtlasTile = null;
 
         for (i in 0...numElements)
         {
             var elementData:SymbolInstanceData = elements[i].symbolInstance;
             oldSymbol = layer.numTiles > i ? cast layer.getTileAt(i) : null;
-            var newSymbol:AnimateSymbol = null;
+            var newSymbol:AnimateAtlasTile = null;
             var symbolName:String = elementData.symbolName;
 
-            if (!_atlas.hasSymbol(symbolName))
+            if (!atlas.hasSymbol(symbolName))
                 symbolName = BITMAP_SYMBOL_NAME;
 
-            if (oldSymbol != null && oldSymbol._symbolName == symbolName)
+            if (oldSymbol != null && oldSymbol.symbolName == symbolName)
                 newSymbol = oldSymbol;
             else
             {
@@ -212,34 +207,36 @@ class AnimateSymbol extends TileContainer
                     layer.removeTile(oldSymbol);
                 }
 
-                newSymbol = _atlas.getSymbol(symbolName);
+                newSymbol = atlas.getSymbol(symbolName);
                 layer.addTileAt(newSymbol, i);
             }
 
             newSymbol.name = elementData.instanceName;
-            newSymbol.setTransformationMatrix(elementData.matrix3D);
-            newSymbol.setBitmap(elementData.bitmap);
-            newSymbol.setColor(elementData.color);
-            newSymbol.setLoop(elementData.loop);
-            newSymbol.setType(elementData.symbolType);
 
-            if (newSymbol.type == SymbolType.GRAPHIC)
+            var atlasPlayer:AnimateAtlasPlayer = cast newSymbol._player;
+            atlasPlayer.setTransformationMatrix(elementData.matrix3D);
+            atlasPlayer.setBitmap(elementData.bitmap);
+            atlasPlayer.setColor(elementData.color);
+            atlasPlayer.setLoop(elementData.loop);
+            atlasPlayer.setType(elementData.symbolType);
+
+            if (atlasPlayer.type == SymbolType.GRAPHIC)
             {
                 var firstFrame:Int = elementData.firstFrame;
-                var frameAge:Int = Std.int(_currentFrame - frameData.index);
+                var frameAge:Int = Std.int(currentFrame - frameData.index);
 
-                if (newSymbol.loopMode == LoopMode.SINGLE_FRAME)
+                if (atlasPlayer.loopMode == LoopMode.SINGLE_FRAME)
                 {
                     stop();
-                    newSymbol.currentFrame = firstFrame;
+                    atlasPlayer.currentFrame = firstFrame;
                 }
-                else if (newSymbol.loopMode == LoopMode.LOOP)
+                else if (atlasPlayer.loopMode == LoopMode.LOOP)
                 {
-                    newSymbol.currentFrame = (firstFrame + frameAge) % newSymbol._numFrames;
+                    atlasPlayer.currentFrame = (firstFrame + frameAge) % atlasPlayer.numFrames;
                 }
                 else
                 {
-                    newSymbol.currentFrame = firstFrame + frameAge;
+                    atlasPlayer.currentFrame = firstFrame + frameAge;
                 }
             }
         }
@@ -249,21 +246,21 @@ class AnimateSymbol extends TileContainer
         for (i in 0...numObsoleteSymbols)
         {
             oldSymbol = cast layer.removeTileAt(numElements);
-            _atlas.putSymbol(oldSymbol);
+            atlas.putSymbol(oldSymbol);
         }
 
-        if(_frameScripts.exists(_currentFrame))
+        if(frameScripts.exists(currentFrame))
         {
-            _frameScripts.get(_currentFrame)();
+            frameScripts.get(currentFrame)();
         }
     }
 
     private function createLayers():Void
     {
-        for (i in 0..._numLayers)
+        for (i in 0...numLayers)
         {
             var layer:TileContainer = new TileContainer();
-            addTile(layer);
+            container.addTile(layer);
         }
     }
 
@@ -272,36 +269,34 @@ class AnimateSymbol extends TileContainer
     {
         if (data != null)
         {
-            id = _atlas.getId(data.name);
+            display.visible = true;
 
-            _bitmap.visible = true;
-
-            _bitmap.id = id;
+            display.id = atlas.getId(data.name);
 
             if(data.position != null)
             {
-                _bitmap.x = data.position.x;
-                _bitmap.y = data.position.y;
+                display.x = data.position.x;
+                display.y = data.position.y;
             }else{
-                if(_bitmap.matrix.a != data.matrix3D.m00 || _bitmap.matrix.b != data.matrix3D.m01 || _bitmap.matrix.c != data.matrix3D.m10 || _bitmap.matrix.d != data.matrix3D.m11 || _bitmap.matrix.tx != data.matrix3D.m30 || _bitmap.matrix.ty != data.matrix3D.m31)
+                if(display.matrix.a != data.matrix3D.m00 || display.matrix.b != data.matrix3D.m01 || display.matrix.c != data.matrix3D.m10 || display.matrix.d != data.matrix3D.m11 || display.matrix.tx != data.matrix3D.m30 || display.matrix.ty != data.matrix3D.m31)
                 {
-                    _bitmap.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
-                    _bitmap.__setRenderDirty();
+                    display.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
+                    display.__setRenderDirty();
                 }
             }
         }
-        else if (_bitmap != null)
+        else if (display != null)
         {
-            _bitmap.visible = false;
+            display.visible = false;
         }
     }
 
     private inline function setTransformationMatrix(data:Matrix3DData):Void
     {
-        if(matrix.a != data.m00 || matrix.b != data.m01 || matrix.c != data.m10 || matrix.d != data.m11 || matrix.tx != data.m30 || matrix.ty != data.m31)
+        if(container.matrix.a != data.m00 || container.matrix.b != data.m01 || container.matrix.c != data.m10 || container.matrix.d != data.m11 || container.matrix.tx != data.m30 || container.matrix.ty != data.m31)
         {
-            matrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
-            __setRenderDirty();
+            container.matrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
+            container.__setRenderDirty();
         }
     }
 
@@ -310,11 +305,11 @@ class AnimateSymbol extends TileContainer
         if (data != null)
         {
             var mode:String = data.mode;
-            alpha = (ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
+            container.alpha = (ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
         }
         else
         {
-            alpha = 1.0;
+            container.alpha = 1.0;
         }
     }
 
@@ -336,7 +331,7 @@ class AnimateSymbol extends TileContainer
     {
         var numFrames : Int = 0;
 
-        for (i in 0..._numLayers)
+        for (i in 0...numLayers)
         {
             var frameDates:Array<LayerFrameData> = getLayerData(i).frames;
             var numFrameDates:Int = frameDates != null ? frameDates.length : 0;
@@ -356,7 +351,7 @@ class AnimateSymbol extends TileContainer
     {
         var labels:Array<FrameLabel> = [];
 
-        for (i in 0..._numLayers)
+        for (i in 0...numLayers)
         {
             var frameDates:Array<LayerFrameData> = getLayerData(i).frames;
             var numFrameDates:Int = frameDates != null ? frameDates.length : 0;
@@ -395,35 +390,35 @@ class AnimateSymbol extends TileContainer
 
     private inline function getLayer(layerIndex:Int):TileContainer
     {
-        return cast getTileAt(layerIndex + 1);
+        return cast container.getTileAt(layerIndex + 1);
     }
 
     public function getNextLabel(afterLabel:String=null):String
     {
-        var numLabels:Int = _frameLabels.length;
+        var numLabels:Int = frameLabels.length;
         var startFrame:Int = getFrame(afterLabel == null ? currentLabel : afterLabel);
         //todo check getFrame
 
         for (i in 0...numLabels)
         {
-            var label:FrameLabel = _frameLabels[i];
+            var label:FrameLabel = frameLabels[i];
             if (label.frame > startFrame)
                 return label.name;
         }
 
-        return _frameLabels != null ? _frameLabels[0].name : null; // wrap around
+        return frameLabels != null ? frameLabels[0].name : null; // wrap around
     }
 
     private function get_currentLabel() : String
     {
-        var numLabels:Int = _frameLabels.length;
-        var highestLabel:FrameLabel = numLabels != 0 ? _frameLabels[0] : null;
+        var numLabels:Int = frameLabels.length;
+        var highestLabel:FrameLabel = numLabels != 0 ? frameLabels[0] : null;
 
         for (i in 0...numLabels)
         {
-            var label:FrameLabel = _frameLabels[i];
+            var label:FrameLabel = frameLabels[i];
 
-            if (label.frame <= _currentFrame)
+            if (label.frame <= currentFrame)
                 highestLabel = label;
             else
                 break;
@@ -434,17 +429,17 @@ class AnimateSymbol extends TileContainer
 
     public function getFrame(label : String) : Int
     {
-        var numLabels:Int = _frameLabels.length;
+        var numLabels:Int = frameLabels.length;
         for (i in 0...numLabels)
         {
-            var frameLabel:FrameLabel = _frameLabels[i];
+            var frameLabel:FrameLabel = frameLabels[i];
             if (frameLabel.name == label)
                 return frameLabel.frame;
         }
         return -1;
     }
 
-    private function get_currentFrame() : Int
+    private inline function get_currentFrame() : Int
     {
         return _currentFrame;
     }
@@ -452,44 +447,29 @@ class AnimateSymbol extends TileContainer
     private function set_currentFrame(value : Int) : Int
     {
         while (value < 0)
-            value += _numFrames;
+            value += numFrames;
 
         if (loopMode == LoopMode.PLAY_ONCE)
-            _currentFrame = Std.int(MathUtil.clamp(value, 0, _numFrames - 1));
+            _currentFrame = Std.int(MathUtil.clamp(value, 0, numFrames - 1));
         else
-            _currentFrame = Std.int(Math.abs(value % _numFrames));
+            _currentFrame = Std.int(Math.abs(value % numFrames));
 
-        if (_composedFrame != _currentFrame)
+        if (composedFrame != _currentFrame)
             update();
 
         return value;
     }
 
-    private function get_symbolName() : String
+    private inline function get_frameRate():Float
     {
-        return _symbolName;
-    }
-
-    private function get_numLayers() : Int
-    {
-        return _numLayers;
-    }
-
-    private function get_numFrames() : Int
-    {
-        return _numFrames;
-    }
-
-    private function get_frameRate():Float
-    {
-        return _atlas.frameRate;
+        return atlas.frameRate;
     }
 
     // data access
 
-    private inline function getLayerData(layerIndex : Int) : LayerData
+    private inline function getLayerData(layerIndex : Int):LayerData
     {
-        return _data.timeline.layers[layerIndex];
+        return data.timeline.layers[layerIndex];
     }
 
     private function getFrameData(layerIndex:Int, frameIndex:Int):LayerFrameData
