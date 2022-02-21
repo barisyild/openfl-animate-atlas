@@ -1,5 +1,10 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.display.IAtlasDisplayObjectContainer;
+import openfl.display.Bitmap;
+import openfl.display.Bitmap;
+import openfl.extensions.animate.display.AnimateAtlasSprite;
+import openfl.geom.Matrix;
 import openfl.extensions.animate.display.AnimateAtlasPlayer;
 import openfl.extensions.animate.data.AtlasSpriteInstance;
 import openfl.extensions.animate.data.Matrix3DData;
@@ -13,21 +18,25 @@ import openfl.extensions.animate.data.SymbolTimelineData;
 import openfl.extensions.animate.data.LayerData;
 import openfl.extensions.animate.data.SymbolData;
 import openfl.extensions.animate.display.AnimateAtlasTile;
-import String;
-import flash.geom.Rectangle;
+import openfl.geom.Rectangle;
 import openfl.extensions.animate.display.AnimateAtlasTileset;
 import openfl.display.BitmapData;
 import openfl.errors.ArgumentError;
+import openfl.geom.Point;
 
 class AnimateAtlasSheet
 {
+    public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
+    public static var ALPHA_MODES = ["Alpha", "Advanced", "AD"];
+    private static var sMatrix:Matrix = new Matrix();
+
     public var frameRate(get, set) : Float;
-    public var tileset(default, null):AnimateAtlasTileset;
 
     public static inline var ASSET_TYPE : String = "animationAtlas";
 
+    private var spritemap:BitmapData;
     private var _symbolData : Map<String, SymbolData>;
-    private var _symbolPool : Map<String, Array<AnimateAtlasTile>>;
+    private var _symbolPool : Map<String, Array<IAtlasDisplayObjectContainer>>;
     private var _frameRate : Float;
     private var _defaultSymbolName : String;
 
@@ -44,12 +53,11 @@ class AnimateAtlasSheet
         if (rawAnimationData  == null) throw new ArgumentError("data must not be null");
         if (spritemap == null) throw new ArgumentError("spritemap must not be null");
 
-        tileset = new AnimateAtlasTileset(spritemap);
-
         var data:openfl.extensions.animate.struct.AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
         parseData(data, atlas);
+        parseDisplay(spritemap, atlas);
 
-        _symbolPool = new Map<String, Array<AnimateAtlasTile>>();
+        _symbolPool = new Map<String, Array<IAtlasDisplayObjectContainer>>();
     }
 
     public inline function hasAnimation(name : String) : Bool
@@ -63,7 +71,7 @@ class AnimateAtlasSheet
 
         for (name in _symbolData.keys())
         {
-            if (name != AnimateAtlasPlayer.BITMAP_SYMBOL_NAME && name.indexOf(prefix) == 0)
+            if (name != AnimateAtlasSheet.BITMAP_SYMBOL_NAME && name.indexOf(prefix) == 0)
             {
                 out[out.length] = name;
             }
@@ -87,32 +95,23 @@ class AnimateAtlasSheet
     // pooling
 
     @:allow(openfl.extensions.animate)
-    public inline function getId(name : String):Int
-    {
-        return tileset.__names.get(name);
-    }
-
-    @:allow(openfl.extensions.animate)
     private inline function hasSymbol(name : String) : Bool
     {
         return _symbolData.exists(name);
     }
 
     @:allow(openfl.extensions.animate)
-    private function getSymbol(name : String) : AnimateAtlasTile
+    private function getSymbol(name:String) : IAtlasDisplayObjectContainer
     {
-        var pool:Array<AnimateAtlasTile> = getSymbolPool(name);
-        if (pool.length == 0)
-            return new AnimateAtlasTile(getSymbolData(name), this);
-        else return pool.pop();
+        throw "Override required";
     }
 
-    @:access(openfl.extensions.animate.display.AnimateAtlasTile)
+    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
     @:allow(openfl.extensions.animate)
-    private function putSymbol(symbol : AnimateAtlasTile) : Void
+    private function putSymbol(symbol : IAtlasDisplayObjectContainer) : Void
     {
         symbol._player.reset();
-        var pool:Array<AnimateAtlasTile> = getSymbolPool(symbol.symbolName);
+        var pool:Array<IAtlasDisplayObjectContainer> = getSymbolPool(symbol.symbolName);
         pool[pool.length] = symbol;
         symbol.currentFrame = 0;
     }
@@ -121,12 +120,6 @@ class AnimateAtlasSheet
 
     private function parseData(data:openfl.extensions.animate.struct.AnimationAtlasData, atlas:openfl.extensions.animate.struct.ATLAS) : Void
     {
-        for(SPRITE in atlas.ATLAS.SPRITES)
-        {
-            //TODO: Use rect pooling
-            tileset.__names.set(SPRITE.SPRITE.name, tileset.addRect(new Rectangle(SPRITE.SPRITE.x, SPRITE.SPRITE.y, SPRITE.SPRITE.w, SPRITE.SPRITE.h)));
-        }
-
         var metaData = data.metadata;
 
         if (metaData != null && metaData.frameRate > 0)
@@ -139,7 +132,6 @@ class AnimateAtlasSheet
         // the actual symbol dictionary
         for (symbolData in data.symbolDictionary.symbols)
         {
-            tileset.__names.set(symbolData.symbolName, tileset.addRect(new Rectangle(0, 337, 257, 166)));
             _symbolData[symbolData.symbolName] = preprocessSymbolData(symbolData);
         }
 
@@ -150,10 +142,15 @@ class AnimateAtlasSheet
 
         // a purely internal symbol for bitmaps - simplifies their handling
         var symbolData:SymbolData = new SymbolData();
-        symbolData.symbolName = AnimateAtlasPlayer.BITMAP_SYMBOL_NAME;
+        symbolData.symbolName = AnimateAtlasSheet.BITMAP_SYMBOL_NAME;
         symbolData.timeline = new SymbolTimelineData();
         symbolData.timeline.layers = [];
-        _symbolData[AnimateAtlasPlayer.BITMAP_SYMBOL_NAME] = symbolData;
+        _symbolData[AnimateAtlasSheet.BITMAP_SYMBOL_NAME] = symbolData;
+    }
+
+    private function parseDisplay(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS):Void
+    {
+
     }
 
     private static function preprocessSymbolData(symbolData:openfl.extensions.animate.struct.AnimationAtlasData.SymbolData) : SymbolData
@@ -194,7 +191,7 @@ class AnimateAtlasSheet
                     if (element.atlasSpriteInstance != null)
                     {
                         element.symbolInstance = new SymbolInstanceData();
-                        element.symbolInstance.symbolName = AnimateAtlasPlayer.BITMAP_SYMBOL_NAME;
+                        element.symbolInstance.symbolName = AnimateAtlasSheet.BITMAP_SYMBOL_NAME;
                         element.symbolInstance.instanceName = "InstName";
                         element.symbolInstance.bitmap = element.atlasSpriteInstance;
                         element.symbolInstance.symbolType = SymbolType.GRAPHIC;
@@ -227,12 +224,12 @@ class AnimateAtlasSheet
         return _symbolData.get(name);
     }
 
-    private function getSymbolPool(name : String) : Array<AnimateAtlasTile>
+    private function getSymbolPool(name : String) : Array<IAtlasDisplayObjectContainer>
     {
-        var pool : Array<AnimateAtlasTile> = cast _symbolPool.get(name);
+        var pool:Array<IAtlasDisplayObjectContainer> = cast _symbolPool.get(name);
         if (pool == null)
         {
-            pool = new Array<AnimateAtlasTile>();
+            pool = new Array<IAtlasDisplayObjectContainer>();
             _symbolPool.set(name, cast pool);
         }
         return pool;

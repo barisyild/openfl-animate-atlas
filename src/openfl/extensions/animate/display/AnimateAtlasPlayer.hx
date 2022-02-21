@@ -1,5 +1,11 @@
 package openfl.extensions.animate.display;
 
+import openfl.display.Bitmap;
+import openfl.extensions.animate.type.ObjectType;
+import openfl.extensions.animate.AnimateAtlasSheet;
+import openfl.display.Sprite;
+import openfl.display.DisplayObjectContainer;
+import openfl.display.DisplayObject;
 import openfl.extensions.animate.data.LayerData;
 import openfl.extensions.animate.utils.MathUtil;
 import openfl.geom.Matrix;
@@ -20,12 +26,7 @@ import openfl.utils.Function;
 
 @:access(openfl.display.TileContainer)
 @:access(openfl.display.Tile)
-class AnimateAtlasPlayer {
-    public static inline var BITMAP_SYMBOL_NAME : String = "___atlas_sprite___";
-
-    private static var ALPHA_MODES = ["Alpha", "Advanced", "AD"];
-    private static var sMatrix:Matrix = new Matrix();
-
+@:generic class AnimateAtlasPlayer {
     private var _currentFrame : Int = 0;
     public var currentFrame(get, set):Int;
     public var currentLabel(get, never):String;
@@ -46,11 +47,13 @@ class AnimateAtlasPlayer {
     private var frameLabels : Array<FrameLabel>;
     private var colorTransform:ColorMatrixFilter;
 
-    private var container:TileContainer;
-    private var display:Tile;
+    private var container:IAtlasDisplayObjectContainer;
+    private var display:IAtlasDisplayObject;
+    private var objectType:ObjectType;
 
 
-    public function new(data:SymbolData, atlas:AnimateAtlasSheet, container:TileContainer, display:Tile) {
+    public function new(objectType:ObjectType, data:SymbolData, atlas:AnimateAtlasSheet, container:IAtlasDisplayObjectContainer, display:IAtlasDisplayObject) {
+        this.objectType = objectType;
         this.data = data;
         this.atlas = atlas;
         this.container = container;
@@ -102,18 +105,34 @@ class AnimateAtlasPlayer {
         playing = false;
     }
 
-    public function getSymbolByName(name:String):AnimateAtlasTile
+    public function getSymbolByName(name:String):IAtlasDisplayObjectContainer
     {
         for (l in 0...numLayers)
         {
-            var layer:TileContainer = getLayer(l);
-            var numElements:Int = layer.numTiles;
-
-            for (e in 0...numElements)
+            if(objectType == ObjectType.DISPLAYOBJECT)
             {
-                if(cast(layer.getTileAt(e),AnimateAtlasTile).name == name)
-                    return cast layer.getTileAt(e);
+                var layer:Sprite = cast getLayer(l);
+                var numElements:Int = layer.numChildren;
+
+                for (e in 0...numElements)
+                {
+                    var displayObjectContainer:DisplayObjectContainer = cast layer.getChildAt(e);
+                    if(displayObjectContainer.name == name)
+                        return cast displayObjectContainer;
+                }
+            }else if(objectType == ObjectType.TILE)
+            {
+                var layer:TileContainer = cast getLayer(l);
+                var numElements:Int = layer.numTiles;
+
+                for (e in 0...numElements)
+                {
+                    var animateAtlasTile:AnimateAtlasTile = cast layer.getTileAt(e);
+                    if(animateAtlasTile.name == name)
+                        return cast animateAtlasTile;
+                }
             }
+
         }
 
         return null;
@@ -160,12 +179,23 @@ class AnimateAtlasPlayer {
 
         for (l in 0...numLayers)
         {
-            var layer:TileContainer = getLayer(l);
-            var numElements:Int = layer.numTiles;
+            var layer:IAtlasDisplayObjectContainer = getLayer(l);
+            var numElements:Int = 0;
+
+            if(objectType == ObjectType.DISPLAYOBJECT)
+                numElements = getDisplayObjectContainer(cast layer).numChildren;
+            else if(objectType == ObjectType.TILE)
+                numElements = getTileContainer(cast layer).numTiles;
 
             for (e in 0...numElements)
             {
-                var layerTile:AnimateAtlasTile = cast layer.getTileAt(e);
+                var layerTile:IAtlasDisplayObjectContainer = null;
+
+                if(objectType == ObjectType.DISPLAYOBJECT)
+                    layerTile = cast getDisplayObjectContainer(cast layer).getChildAt(e);
+                else if(objectType == ObjectType.TILE)
+                    layerTile = cast getTileContainer(cast layer).getTileAt(e);
+
                 layerTile.nextFrame_MovieClips();
             }
         }
@@ -179,24 +209,50 @@ class AnimateAtlasPlayer {
         composedFrame = currentFrame;
     }
 
+    public inline function getTileContainer(tileContainer:TileContainer):TileContainer
+    {
+        return cast tileContainer;
+    }
+
+    public inline function getDisplayObjectContainer(displayObjectContainer:DisplayObjectContainer):DisplayObjectContainer
+    {
+        return cast displayObjectContainer;
+    }
+
+    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
     private function updateLayer(layerIndex:Int):Void
     {
-        var layer:TileContainer = getLayer(layerIndex);
+        var displayObjectContainer:DisplayObjectContainer = null;
+        var tileContainer:TileContainer = null;
+
+        if(objectType == ObjectType.DISPLAYOBJECT)
+        {
+            displayObjectContainer = cast getLayer(layerIndex);
+        }else if(objectType == ObjectType.TILE){
+            tileContainer = cast getLayer(layerIndex);
+        }
+
         var frameData:LayerFrameData = getFrameData(layerIndex, currentFrame);
         var elements:Array<ElementData> = frameData != null ? frameData.elements : null;
         var numElements:Int = elements != null ? elements.length : 0;
 
-        var oldSymbol:AnimateAtlasTile = null;
+        var oldSymbol:IAtlasDisplayObjectContainer = null;
 
         for (i in 0...numElements)
         {
             var elementData:SymbolInstanceData = elements[i].symbolInstance;
-            oldSymbol = layer.numTiles > i ? cast layer.getTileAt(i) : null;
-            var newSymbol:AnimateAtlasTile = null;
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                oldSymbol = displayObjectContainer.numChildren > i ? cast displayObjectContainer.getChildAt(i) : null;
+            }else if(objectType == ObjectType.TILE){
+                oldSymbol = tileContainer.numTiles > i ? cast tileContainer.getTileAt(i) : null;
+            }
+
+            var newSymbol:IAtlasDisplayObjectContainer = null;
             var symbolName:String = elementData.symbolName;
 
             if (!atlas.hasSymbol(symbolName))
-                symbolName = BITMAP_SYMBOL_NAME;
+                symbolName = AnimateAtlasSheet.BITMAP_SYMBOL_NAME;
 
             if (oldSymbol != null && oldSymbol.symbolName == symbolName)
                 newSymbol = oldSymbol;
@@ -204,11 +260,22 @@ class AnimateAtlasPlayer {
             {
                 if (oldSymbol != null)
                 {
-                    layer.removeTile(oldSymbol);
+                    if(objectType == ObjectType.DISPLAYOBJECT)
+                    {
+                        displayObjectContainer.removeChild(cast oldSymbol);
+                    }else if(objectType == ObjectType.TILE){
+                        tileContainer.removeTile(cast oldSymbol);
+                    }
                 }
 
                 newSymbol = atlas.getSymbol(symbolName);
-                layer.addTileAt(newSymbol, i);
+
+                if(objectType == ObjectType.DISPLAYOBJECT)
+                {
+                    displayObjectContainer.addChildAt(cast newSymbol, i);
+                }else if(objectType == ObjectType.TILE){
+                    tileContainer.addTileAt(cast newSymbol, i);
+                }
             }
 
             newSymbol.name = elementData.instanceName;
@@ -241,12 +308,24 @@ class AnimateAtlasPlayer {
             }
         }
 
-        var numObsoleteSymbols:Int = layer.numTiles - numElements;
+        var numObsoleteSymbols:Int = 0;
+
+        if(objectType == ObjectType.DISPLAYOBJECT)
+        {
+            numObsoleteSymbols = displayObjectContainer.numChildren - numElements;
+        }else if(objectType == ObjectType.TILE){
+            numObsoleteSymbols = tileContainer.numTiles - numElements;
+        }
 
         for (i in 0...numObsoleteSymbols)
         {
-            oldSymbol = cast layer.removeTileAt(numElements);
-            atlas.putSymbol(oldSymbol);
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                oldSymbol = cast displayObjectContainer.removeChildAt(numElements);
+            }else if(objectType == ObjectType.TILE){
+                oldSymbol = cast tileContainer.removeTileAt(numElements);
+            }
+            atlas.putSymbol(cast oldSymbol);
         }
 
         if(frameScripts.exists(currentFrame))
@@ -259,29 +338,65 @@ class AnimateAtlasPlayer {
     {
         for (i in 0...numLayers)
         {
-            var layer:TileContainer = new TileContainer();
-            container.addTile(layer);
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                var displayObjectContainer:DisplayObjectContainer = cast container;
+                var layer:Sprite = new Sprite();
+                displayObjectContainer.addChild(layer);
+            }else if(objectType == ObjectType.TILE){
+                var tileContainer:TileContainer = cast container;
+                var layer:TileContainer = new TileContainer();
+                tileContainer.addTile(layer);
+            }
+
         }
     }
 
+    @:access(openfl.extensions.animate.display.IAtlasDisplayObject)
     @:access(openfl.extensions.animate.display.AnimateAtlasTile)
     public inline function setBitmap(data:AtlasSpriteInstance):Void
     {
         if (data != null)
         {
+            var matrix:Matrix = null;
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                var displayObjectContainer:DisplayObject = cast display;
+                matrix = displayObjectContainer.transform.matrix;
+            }else if(objectType == ObjectType.TILE){
+                var tileContainer:Tile = cast display;
+                matrix = tileContainer.matrix;
+            }
+
             display.visible = true;
 
-            display.id = atlas.getId(data.name);
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                var animateSpriteAtlasSheet:AnimateSpriteAtlasSheet = cast atlas;
+                var bitmap:Bitmap = cast display;
+                bitmap.bitmapData = animateSpriteAtlasSheet.getBitmapData(data.name);
+            }else if(objectType == ObjectType.TILE){
+                var animateTileAtlasSheet:AnimateTileAtlasSheet = cast atlas;
+                var tile:Tile = cast display;
+                tile.id = animateTileAtlasSheet.getId(data.name);
+            }
 
             if(data.position != null)
             {
                 display.x = data.position.x;
                 display.y = data.position.y;
             }else{
-                if(display.matrix.a != data.matrix3D.m00 || display.matrix.b != data.matrix3D.m01 || display.matrix.c != data.matrix3D.m10 || display.matrix.d != data.matrix3D.m11 || display.matrix.tx != data.matrix3D.m30 || display.matrix.ty != data.matrix3D.m31)
+                if(matrix.a != data.matrix3D.m00 || matrix.b != data.matrix3D.m01 || matrix.c != data.matrix3D.m10 || matrix.d != data.matrix3D.m11 || matrix.tx != data.matrix3D.m30 || matrix.ty != data.matrix3D.m31)
                 {
-                    display.matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
-                    display.__setRenderDirty();
+                    matrix.setTo(data.matrix3D.m00, data.matrix3D.m01, data.matrix3D.m10, data.matrix3D.m11, data.matrix3D.m30, data.matrix3D.m31);
+                    if(objectType == ObjectType.DISPLAYOBJECT)
+                    {
+                        var bitmap:Bitmap = cast display;
+                        bitmap.transform.matrix = matrix;
+                    }else if(objectType == ObjectType.TILE){
+                        var tile:Tile = cast display;
+                        tile.matrix = matrix;
+                    }
                 }
             }
         }
@@ -291,12 +406,33 @@ class AnimateAtlasPlayer {
         }
     }
 
+    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
     private inline function setTransformationMatrix(data:Matrix3DData):Void
     {
-        if(container.matrix.a != data.m00 || container.matrix.b != data.m01 || container.matrix.c != data.m10 || container.matrix.d != data.m11 || container.matrix.tx != data.m30 || container.matrix.ty != data.m31)
+        var matrix:Matrix = null;
+        if(objectType == ObjectType.DISPLAYOBJECT)
         {
-            container.matrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
-            container.__setRenderDirty();
+            var displayObjectContainer:DisplayObjectContainer = cast container;
+            matrix = displayObjectContainer.transform.matrix;
+        }else if(objectType == ObjectType.TILE){
+            var tileContainer:TileContainer = cast container;
+            matrix = tileContainer.matrix;
+        }
+        if(matrix.a != data.m00 || matrix.b != data.m01 || matrix.c != data.m10 || matrix.d != data.m11 || matrix.tx != data.m30 || matrix.ty != data.m31)
+        {
+            matrix.setTo(data.m00, data.m01, data.m10, data.m11, data.m30, data.m31);
+
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                var displayObjectContainer:DisplayObjectContainer = cast container;
+                displayObjectContainer.transform.matrix = matrix;
+            }else if(objectType == ObjectType.TILE){
+                var tile:Tile = cast container;
+                tile.matrix = matrix;
+                #if !flash
+                container.__setRenderDirty();
+                #end
+            }
         }
     }
 
@@ -305,7 +441,7 @@ class AnimateAtlasPlayer {
         if (data != null)
         {
             var mode:String = data.mode;
-            container.alpha = (ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
+            container.alpha = (AnimateAtlasSheet.ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
         }
         else
         {
@@ -388,9 +524,18 @@ class AnimateAtlasPlayer {
         }
     }
 
-    private inline function getLayer(layerIndex:Int):TileContainer
+    private function getLayer(layerIndex:Int):IAtlasDisplayObjectContainer
     {
-        return cast container.getTileAt(layerIndex + 1);
+        if(objectType == ObjectType.DISPLAYOBJECT)
+        {
+            var displayObjectContainer:DisplayObjectContainer = cast container;
+            return cast displayObjectContainer.getChildAt(layerIndex + 1);
+        }else if(objectType == ObjectType.TILE){
+            var tileContainer:TileContainer = cast container;
+            return cast tileContainer.getTileAt(layerIndex + 1);
+        }
+
+        return null;
     }
 
     public function getNextLabel(afterLabel:String=null):String

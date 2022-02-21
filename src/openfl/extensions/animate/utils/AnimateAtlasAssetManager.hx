@@ -20,22 +20,16 @@ import haxe.io.Bytes;
 import haxe.Json;
 
 @:generic
-class AnimateAtlasAssetManager<T> {
-    private var animateAtlasParser:AnimateAtlasParser<T>;
-
-    public function new(typeInstance:Class<T>) {
-        animateAtlasParser = new AnimateAtlasParser<T>(typeInstance);
-    }
-
+class AnimateAtlasAssetManager {
     //Read content from memory
-    public function loadAssetSync(directory:String):T {
+    public static function loadAssetSync(directory:String, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
         var spritemap:BitmapData = Assets.getBitmapData(directory +  "spritemap1.png");
         var spritemapJson:String = Assets.getText(directory +  "spritemap1.json");
         var animationJson:String = Assets.getText(directory +  "Animation.json");
 
-        return animateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
+        return AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson, typeInstance);
     }
 
     /*public static function loadCompressedAssetSync(path:String):AnimationAtlas {
@@ -44,10 +38,10 @@ class AnimateAtlasAssetManager<T> {
     }*/
 
     //Load required library contents from storage/internet
-    public function loadAsset(directory:String, useCache:Null<Bool> = true):Future<T> {
+    public static function loadAsset(directory:String, typeInstance:Class<AnimateAtlasSheet>, useCache:Null<Bool> = true):Future<AnimateAtlasSheet> {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
-        var promise = new Promise<T>();
+        var promise = new Promise<AnimateAtlasSheet>();
         var count = 3;
 
         var spritemap:BitmapData = null;
@@ -60,7 +54,7 @@ class AnimateAtlasAssetManager<T> {
 
             if(count == 0)
             {
-                var atlas = animateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson);
+                var atlas = AnimateAtlasParser.parseAssetSync(spritemap, spritemapJson, animationJson, typeInstance);
                 promise.complete(atlas);
             }
         }
@@ -89,15 +83,15 @@ class AnimateAtlasAssetManager<T> {
         return promise.future;
     }
 
-    public function loadCompressedAssetSync(path:String):T {
-        return animateAtlasParser.parseCompressedAssetSync(Assets.getBytes(path));
+    public static function loadCompressedAssetSync(path:String, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet {
+        return AnimateAtlasParser.parseCompressedAssetSync(Assets.getBytes(path), typeInstance);
     }
 
-    public function loadCompressedAsset(path:String):Future<T> {
-        var promise = new Promise<T>();
+    public static function loadCompressedAsset(path:String, typeInstance:Class<AnimateAtlasSheet>):Future<AnimateAtlasSheet> {
+        var promise = new Promise<AnimateAtlasSheet>();
 
         Assets.loadBytes(path).onComplete (function (bytes:Bytes) {
-            animateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas:T) {
+            AnimateAtlasParser.parseCompressedAsset(bytes, typeInstance).onComplete(function (atlas:AnimateAtlasSheet) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
                 promise.error(msg);
@@ -113,14 +107,14 @@ class AnimateAtlasAssetManager<T> {
 
     //TODO: implement requestAsset
 
-    public function requestCompressedAsset(url:String):Future<T> {
-        var promise = new Promise<T>();
+    public static function requestCompressedAsset(url:String, typeInstance:Class<AnimateAtlasSheet>):Future<AnimateAtlasSheet> {
+        var promise = new Promise<AnimateAtlasSheet>();
 
         var urlLoader:URLLoader = new URLLoader();
         urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
         urlLoader.addEventListener(Event.COMPLETE, function (e:Event) {
             var bytes:Bytes = urlLoader.data;
-            animateAtlasParser.parseCompressedAsset(bytes).onComplete(function (atlas) {
+            AnimateAtlasParser.parseCompressedAsset(bytes, typeInstance).onComplete(function (atlas) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
                 promise.error(msg);

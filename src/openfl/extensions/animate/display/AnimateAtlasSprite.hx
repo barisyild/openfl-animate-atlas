@@ -1,37 +1,37 @@
 package openfl.extensions.animate.display;
 
-import openfl.extensions.animate.type.ObjectType;
-import openfl.extensions.animate.data.SymbolData;
+import openfl.display.Sprite;
 import haxe.Constraints.Function;
+import openfl.display.Tile;
 import openfl.display.TileContainer;
+import openfl.extensions.animate.data.SymbolData;
+import openfl.extensions.animate.type.ObjectType;
 
 @:access(openfl.extensions.animate.display.AnimateAtlasPlayer)
-class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectContainer
+class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
 {
-    private var _name:String;
-    public var name(get, set):String;
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
     public var symbolName(get, never):String;
     public var numLayers(get, never):Int;
     public var numFrames(get, never):Int;
     public var frameRate(get, never):Float;
-    public var _bitmap:Tile;
+    public var _bitmap:Bitmap;
+
 
     private var _player:AnimateAtlasPlayer;
 
     @:access(openfl.extensions.animate.AnimateAtlasSheet)
-    public function new(atlas:AnimateTileAtlasSheet, name:String = null)
+    public function new(atlas:AnimateSpriteAtlasSheet, name:String = null)
     {
         super();
         var data = atlas.getSymbolData(name == null ? atlas._defaultSymbolName : name);
-        this.tileset = atlas.tileset;
 
-        _bitmap = new Tile();
-        addTile(_bitmap);
+        _bitmap = new Bitmap();
+        addChild(_bitmap);
         _bitmap.visible = false;
 
-        _player = new AnimateAtlasPlayer(ObjectType.TILE, data, atlas, this, _bitmap);
+        _player = new AnimateAtlasPlayer(ObjectType.DISPLAYOBJECT, data, atlas, this, _bitmap);
     }
 
     public inline function addFrameScript(frame:Int, func:Function):Void
@@ -82,16 +82,6 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
     public function nextFrame_MovieClips():Void
     {
         _player.nextFrame_MovieClips();
-    }
-
-    public function get_name():String
-    {
-        return _name;
-    }
-
-    public function set_name(name:String):String
-    {
-        return _name = name;
     }
 
     public function get_currentLabel():String
