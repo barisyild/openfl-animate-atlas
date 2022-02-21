@@ -31,7 +31,6 @@ var animation = new AnimateAtlasSprite(animateSpriteAtlasSheet); //I am planning
 animation.x = stage.stageWidth / 2;
 animation.y = stage.stageHeight / 2;
 addChild(animation);
-Juggler.add(animation); //Add animation to animation class, make sure to call "Juggler.remove(animation);" when you're done with the animation.
 
 //Note: I plan to delete Juggler in the long run so anyone can create their own animation update solution.
 ```

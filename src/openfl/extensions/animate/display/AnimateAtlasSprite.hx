@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.events.Event;
 import openfl.display.Sprite;
 import haxe.Constraints.Function;
 import openfl.display.Tile;
@@ -10,6 +11,8 @@ import openfl.extensions.animate.type.ObjectType;
 @:access(openfl.extensions.animate.display.AnimateAtlasPlayer)
 class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
 {
+    private var _frameTimestamp:Float = 0.0;
+
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
     public var symbolName(get, never):String;
@@ -17,7 +20,6 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
     public var numFrames(get, never):Int;
     public var frameRate(get, never):Float;
     public var _bitmap:Bitmap;
-
 
     private var _player:AnimateAtlasPlayer;
 
@@ -32,6 +34,19 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
         _bitmap.visible = false;
 
         _player = new AnimateAtlasPlayer(ObjectType.DISPLAYOBJECT, data, atlas, this, _bitmap);
+    }
+
+    private override function __enterFrame(deltaTime:Int):Void
+    {
+        var now:Float = Lib.getTimer() / 1000.0;
+        var passedTime:Float = now - _frameTimestamp;
+        _frameTimestamp = now;
+
+        if (passedTime > 1.0) passedTime = 1.0;
+
+        if (passedTime < 0.0) passedTime = 1.0 / openfl.Lib.current.stage.frameRate;
+
+        updateFrame(passedTime);
     }
 
     public inline function addFrameScript(frame:Int, func:Function):Void
