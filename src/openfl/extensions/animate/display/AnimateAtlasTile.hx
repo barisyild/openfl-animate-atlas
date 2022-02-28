@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.extensions.animate.type.LoopMode;
 import openfl.extensions.animate.type.ObjectType;
 import openfl.extensions.animate.data.SymbolData;
 import haxe.Constraints.Function;
@@ -8,8 +9,8 @@ import openfl.display.TileContainer;
 @:access(openfl.extensions.animate.display.AnimateAtlasPlayer)
 class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectContainer
 {
-    private var _name:String;
-    public var name(get, set):String;
+    @:isVar public var name(get, set):String;
+    public var loopMode(get, set):LoopMode;
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
     public var symbolName(get, never):String;
@@ -86,12 +87,22 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
 
     public function get_name():String
     {
-        return _name;
+        return name;
     }
 
-    public function set_name(name:String):String
+    public function set_name(value:String):String
     {
-        return _name = name;
+        return name = value;
+    }
+
+    public function get_loopMode():LoopMode
+    {
+        return _player.loopMode;
+    }
+
+    public function set_loopMode(loopMode:LoopMode):LoopMode
+    {
+        return _player.loopMode = loopMode;
     }
 
     public function get_currentLabel():String

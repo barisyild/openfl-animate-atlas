@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.extensions.animate.type.LoopMode;
 import openfl.events.Event;
 import openfl.display.Sprite;
 import haxe.Constraints.Function;
@@ -13,6 +14,7 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
 {
     private var _frameTimestamp:Float = 0.0;
 
+    public var loopMode(get, set):LoopMode;
     public var currentLabel(get, never):String;
     public var currentFrame(get, set):Int;
     public var symbolName(get, never):String;
@@ -97,6 +99,16 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
     public function nextFrame_MovieClips():Void
     {
         _player.nextFrame_MovieClips();
+    }
+
+    public function get_loopMode():LoopMode
+    {
+        return _player.loopMode;
+    }
+
+    public function set_loopMode(loopMode:LoopMode):LoopMode
+    {
+        return _player.loopMode = loopMode;
     }
 
     public function get_currentLabel():String

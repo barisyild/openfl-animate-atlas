@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.extensions.animate.type.LoopMode;
 import openfl.utils.Function;
 import openfl.display.Bitmap;
 import openfl.display.Tile;
@@ -12,6 +13,7 @@ interface IAtlasDisplayObjectContainer {
     public var x(get, set):Float;
     public var y(get, set):Float;
     public var currentFrame(get, set):Int;
+    public var loopMode(get, set):LoopMode;
 
     private var _player:AnimateAtlasPlayer;
 
