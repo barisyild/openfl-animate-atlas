@@ -54,10 +54,24 @@ import openfl.utils.Function;
 
     public function new(objectType:ObjectType, data:SymbolData, atlas:AnimateAtlasSheet, container:IAtlasDisplayObjectContainer, display:IAtlasDisplayObject) {
         this.objectType = objectType;
-        this.data = data;
-        this.atlas = atlas;
         this.container = container;
         this.display = display;
+
+        setAtlas(atlas, data);
+    }
+
+    @:access(openfl.extensions.animate.AnimateAtlasSheet)
+    public function setAtlas(atlas:AnimateAtlasSheet, data:SymbolData = null):Void
+    {
+        reset();
+
+        if(data == null)
+        {
+            data = atlas.getSymbolData(atlas._defaultSymbolName);
+        }
+
+        this.data = data;
+        this.atlas = atlas;
 
         frameScripts = new Map<Int, Function>();
 

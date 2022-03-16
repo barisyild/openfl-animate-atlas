@@ -20,7 +20,6 @@ class AnimateAtlasButton extends Sprite
         over - mouse over state
      */
 
-    private var colission:Sprite;
     private var animateAtlasSprite:AnimateAtlasSprite;
 
     @:access(openfl.extensions.animate.AnimateAtlasSheet)
@@ -30,29 +29,27 @@ class AnimateAtlasButton extends Sprite
         animateAtlasSprite = new AnimateAtlasSprite(atlas, name);
         addChild(animateAtlasSprite);
 
-        colission = animateAtlasSprite;
-
         gotoAndStop("up");
 
 
-        colission.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-        colission.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-        colission.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-        colission.addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
     }
 
     private function onMouseDown(e:MouseEvent):Void
     {
         trace("onMouseDown");
-        colission.removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-        colission.removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+        animateAtlasSprite.removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+        animateAtlasSprite.removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
         gotoAndStop("down");
     }
 
     private function onMouseUp(e:MouseEvent):Void
     {
-        colission.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-        colission.addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+        animateAtlasSprite.addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
         gotoAndStop("hit");
     }
 

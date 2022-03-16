@@ -31,6 +31,17 @@ animation.y = stage.stageHeight / 2;
 addChild(animation);
 ```
 
+# Button
+
+```haxe
+var animateSpriteAtlasSheet:AnimateSpriteAtlasSheet = cast AnimateAtlasAssetManager.loadAssetSync("assets/button", AnimateSpriteAtlasSheet);
+
+var button = new AnimateAtlasButton(animateSpriteAtlasSheet);
+button.x = stage.stageWidth / 2;
+button.y = stage.stageHeight / 2;
+addChild(button);
+```
+
 Benchmark: http://openfl-animate-atlas.surge.sh/
 
 **Important: Optimized atlases are not supported!**
