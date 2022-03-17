@@ -63,7 +63,8 @@ import openfl.utils.Function;
     @:access(openfl.extensions.animate.AnimateAtlasSheet)
     public function setAtlas(atlas:AnimateAtlasSheet, data:SymbolData = null):Void
     {
-        reset();
+        container.alpha = 1.0;
+        composedFrame = -1;
 
         if(data == null)
         {
@@ -85,6 +86,8 @@ import openfl.utils.Function;
 
         createLayers();
         update();
+
+        currentFrame = 0;
     }
 
     public function addFrameScript(frame:Int, func:Function):Void
