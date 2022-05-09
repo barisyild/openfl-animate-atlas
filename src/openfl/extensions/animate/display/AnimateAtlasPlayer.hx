@@ -608,7 +608,9 @@ import openfl.utils.Function;
         while (value < 0)
             value += numFrames;
 
-        if (loopMode == LoopMode.PLAY_ONCE)
+        if(numFrames == 0)
+            _currentFrame = 0;
+        else if (loopMode == LoopMode.PLAY_ONCE)
             _currentFrame = Std.int(MathUtil.clamp(value, 0, numFrames - 1));
         else
             _currentFrame = Std.int(Math.abs(value % numFrames));
