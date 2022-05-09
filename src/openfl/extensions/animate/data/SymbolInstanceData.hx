@@ -27,7 +27,8 @@ class SymbolInstanceData {
         var symbolInstanceData:SymbolInstanceData = new SymbolInstanceData();
         symbolInstanceData.symbolName = data.symbolName;
         symbolInstanceData.instanceName = data.instanceName;
-        symbolInstanceData.bitmap = data.bitmap;
+        if(data.bitmap != null)
+            symbolInstanceData.bitmap = AtlasSpriteInstance.createFromAnimationAtlasData(data.bitmap);
         symbolInstanceData.symbolType = SymbolTypeUtil.parse(data.symbolType);
         symbolInstanceData.transformationPoint = new PointData(data.transformationPoint.x, data.transformationPoint.y);
         symbolInstanceData.matrix3D = Matrix3DData.createFromAnimationAtlasData(data.matrix3D);
