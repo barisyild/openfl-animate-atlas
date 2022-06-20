@@ -130,9 +130,11 @@ class AnimateAtlasSheet
         _symbolData = new Map<String, SymbolData>();
 
         // the actual symbol dictionary
-        for (symbolData in data.symbolDictionary.symbols)
-        {
-            _symbolData[symbolData.symbolName] = preprocessSymbolData(symbolData);
+        if (data.symbolDictionary != null) {
+            for (symbolData in data.symbolDictionary.symbols)
+            {
+                _symbolData[symbolData.symbolName] = preprocessSymbolData(symbolData);
+            }
         }
 
         // the main animation
