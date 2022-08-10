@@ -1,18 +1,24 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.display.IAtlasObjectContainer;
+import openfl.errors.ArgumentError;
 import openfl.geom.Rectangle;
 import openfl.extensions.animate.display.AnimateAtlasTileset;
 import openfl.display.BitmapData;
 import openfl.extensions.animate.display.AnimateAtlasTile;
-import openfl.extensions.animate.display.IAtlasDisplayObjectContainer;
 
 class AnimateTileAtlasSheet extends AnimateAtlasSheet {
     public var tileset(default, null):AnimateAtlasTileset;
 
-    public function new(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic) {
+    public function new() {
+        super();
+    }
+
+    public override function process(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic):Void
+    {
         tileset = new AnimateAtlasTileset(spritemap);
 
-        super(spritemap, atlas, rawAnimationData);
+        super.process(spritemap, atlas, rawAnimationData);
     }
 
     @:allow(openfl.extensions.animate)
@@ -36,9 +42,9 @@ class AnimateTileAtlasSheet extends AnimateAtlasSheet {
         }*/
     }
 
-    private override function getSymbol(name:String) : IAtlasDisplayObjectContainer
+    private override function getSymbol(name:String) : IAtlasObjectContainer
     {
-        var pool:Array<IAtlasDisplayObjectContainer> = getSymbolPool(name);
+        var pool:Array<IAtlasObjectContainer> = getSymbolPool(name);
         if (pool.length == 0)
             return new AnimateAtlasTile(this, name);
         else return pool.pop();

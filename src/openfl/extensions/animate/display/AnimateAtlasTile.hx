@@ -3,20 +3,12 @@ package openfl.extensions.animate.display;
 import openfl.extensions.animate.type.LoopMode;
 import openfl.extensions.animate.type.ObjectType;
 import openfl.extensions.animate.data.SymbolData;
-import haxe.Constraints.Function;
+import openfl.utils.Function;
 import openfl.display.TileContainer;
 
 @:access(openfl.extensions.animate.display.AnimateAtlasPlayer)
-class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectContainer
+class AnimateAtlasTile extends TileContainer implements IAtlasTileContainer
 {
-    @:isVar public var name(get, set):String;
-    public var loopMode(get, set):LoopMode;
-    public var currentLabel(get, never):String;
-    public var currentFrame(get, set):Int;
-    public var symbolName(get, never):String;
-    public var numLayers(get, never):Int;
-    public var numFrames(get, never):Int;
-    public var frameRate(get, never):Float;
     public var _bitmap:Tile;
 
     private var _player:AnimateAtlasPlayer;
@@ -65,7 +57,7 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
         _player.stop();
     }
 
-    public inline function getSymbolByName(name:String):IAtlasDisplayObjectContainer
+    public inline function getSymbolByName(name:String):IAtlasObjectContainer
     {
         return _player.getSymbolByName(name);
     }
@@ -85,6 +77,7 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
         _player.nextFrame_MovieClips();
     }
 
+    @:isVar public var name(get, set):String;
     public function get_name():String
     {
         return name;
@@ -95,6 +88,7 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
         return name = value;
     }
 
+    public var loopMode(get, set):LoopMode;
     public function get_loopMode():LoopMode
     {
         return _player.loopMode;
@@ -105,11 +99,13 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
         return _player.loopMode = loopMode;
     }
 
+    public var currentLabel(get, never):String;
     public function get_currentLabel():String
     {
         return _player.currentLabel;
     }
 
+    public var currentFrame(get, set):Int;
     public function get_currentFrame():Int
     {
         return _player.currentFrame;
@@ -120,21 +116,25 @@ class AnimateAtlasTile extends TileContainer implements IAtlasDisplayObjectConta
         return _player.currentFrame = value;
     }
 
+    public var symbolName(get, never):String;
     public function get_symbolName():String
     {
         return _player.symbolName;
     }
 
+    public var numLayers(get, never):Int;
     public function get_numLayers():Int
     {
         return _player.numLayers;
     }
 
+    public var numFrames(get, never):Int;
     public function get_numFrames():Int
     {
         return _player.numFrames;
     }
 
+    public var frameRate(get, never):Float;
     public function get_frameRate():Float
     {
         return _player.frameRate;

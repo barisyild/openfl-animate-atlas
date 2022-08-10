@@ -1,7 +1,6 @@
 package openfl.extensions.animate;
 
-import openfl.extensions.animate.display.IAtlasDisplayObjectContainer;
-import openfl.display.Bitmap;
+import openfl.extensions.animate.display.IAtlasObjectContainer;
 import openfl.display.Bitmap;
 import openfl.extensions.animate.display.AnimateAtlasSprite;
 import openfl.geom.Matrix;
@@ -32,13 +31,15 @@ class AnimateAtlasSheet
 
     public var frameRate(get, set) : Float;
 
+    private var _defaultSymbolName:String;
+    public var defaultSymbolName(get, never):String;
+
     public static inline var ASSET_TYPE : String = "animationAtlas";
 
     private var spritemap:BitmapData;
     private var _symbolData : Map<String, SymbolData>;
-    private var _symbolPool : Map<String, Array<IAtlasDisplayObjectContainer>>;
+    private var _symbolPool : Map<String, Array<IAtlasObjectContainer>>;
     private var _frameRate : Float;
-    private var _defaultSymbolName : String;
 
     private static var STD_MATRIX3D_DATA:Dynamic =
     {
@@ -48,16 +49,21 @@ class AnimateAtlasSheet
         m30: 0, m31: 0, m32: 0, m33: 1
     };
 
-    public function new(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic)
+    public function new()
+    {
+
+    }
+
+    public function process(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic):Void
     {
         if (rawAnimationData  == null) throw new ArgumentError("data must not be null");
         if (spritemap == null) throw new ArgumentError("spritemap must not be null");
 
-        var data:openfl.extensions.animate.struct.AnimationAtlasData = cast normalizeJsonKeys(rawAnimationData);
+        var data:openfl.extensions.animate.struct.AnimationAtlasData = cast AnimateAtlasSheet.normalizeJsonKeys(rawAnimationData);
         parseData(data, atlas);
         parseDisplay(spritemap, atlas);
 
-        _symbolPool = new Map<String, Array<IAtlasDisplayObjectContainer>>();
+        _symbolPool = new Map<String, Array<IAtlasObjectContainer>>();
     }
 
     public inline function hasAnimation(name : String) : Bool
@@ -101,17 +107,17 @@ class AnimateAtlasSheet
     }
 
     @:allow(openfl.extensions.animate)
-    private function getSymbol(name:String) : IAtlasDisplayObjectContainer
+    private function getSymbol(name:String) : IAtlasObjectContainer
     {
         throw "Override required";
     }
 
-    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
+    @:access(openfl.extensions.animate.display.IAtlasObjectContainer)
     @:allow(openfl.extensions.animate)
-    private function putSymbol(symbol : IAtlasDisplayObjectContainer) : Void
+    private function putSymbol(symbol : IAtlasObjectContainer) : Void
     {
         symbol._player.reset();
-        var pool:Array<IAtlasDisplayObjectContainer> = getSymbolPool(symbol.symbolName);
+        var pool:Array<IAtlasObjectContainer> = getSymbolPool(symbol.symbolName);
         pool[pool.length] = symbol;
         symbol.currentFrame = 0;
     }
@@ -226,18 +232,23 @@ class AnimateAtlasSheet
         return _symbolData.get(name);
     }
 
-    private function getSymbolPool(name : String) : Array<IAtlasDisplayObjectContainer>
+    private function getSymbolPool(name : String) : Array<IAtlasObjectContainer>
     {
-        var pool:Array<IAtlasDisplayObjectContainer> = cast _symbolPool.get(name);
+        var pool:Array<IAtlasObjectContainer> = cast _symbolPool.get(name);
         if (pool == null)
         {
-            pool = new Array<IAtlasDisplayObjectContainer>();
+            pool = new Array<IAtlasObjectContainer>();
             _symbolPool.set(name, cast pool);
         }
         return pool;
     }
 
     // properties
+
+    private function get_defaultSymbolName() : String
+    {
+        return _defaultSymbolName;
+    }
 
     private function get_frameRate() : Float
     {

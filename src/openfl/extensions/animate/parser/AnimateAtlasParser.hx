@@ -84,6 +84,10 @@ class AnimateAtlasParser {
         var animationAtlasData:openfl.extensions.animate.struct.ATLAS = Json.parse(spritemapJson);
         var rawAnimationData:Dynamic = Json.parse(animationJson);
 
-        return Type.createInstance(typeInstance, [spritemap, animationAtlasData, rawAnimationData]);
+        var animateAtlasSheet = cast(Type.createInstance(typeInstance, []), AnimateAtlasSheet);
+
+        animateAtlasSheet.process(spritemap, animationAtlasData, rawAnimationData);
+
+        return animateAtlasSheet;
     }
 }

@@ -47,12 +47,12 @@ import openfl.utils.Function;
     private var frameLabels : Array<FrameLabel>;
     private var colorTransform:ColorMatrixFilter;
 
-    private var container:IAtlasDisplayObjectContainer;
-    private var display:IAtlasDisplayObject;
+    private var container:IAtlasObjectContainer;
+    private var display:IAtlasObject;
     private var objectType:ObjectType;
 
 
-    public function new(objectType:ObjectType, data:SymbolData, atlas:AnimateAtlasSheet, container:IAtlasDisplayObjectContainer, display:IAtlasDisplayObject) {
+    public function new(objectType:ObjectType, data:SymbolData, atlas:AnimateAtlasSheet, container:IAtlasObjectContainer, display:IAtlasObject) {
         this.objectType = objectType;
         this.container = container;
         this.display = display;
@@ -119,7 +119,7 @@ import openfl.utils.Function;
         playing = false;
     }
 
-    public function getSymbolByName(name:String):IAtlasDisplayObjectContainer
+    public function getSymbolByName(name:String):IAtlasObjectContainer
     {
         for (l in 0...numLayers)
         {
@@ -154,7 +154,15 @@ import openfl.utils.Function;
 
     public function reset():Void
     {
-        container.alpha = 1.0;
+        if(Std.isOfType(container, IAtlasTileContainer))
+        {
+            var container:IAtlasTileContainer = cast container;
+            container.alpha = 1.0;
+        }else if(Std.isOfType(container, IAtlasDisplayObject))
+        {
+            var container:IAtlasDisplayObject = cast container;
+            container.alpha = 1.0;
+        }
         currentFrame = 0;
         composedFrame = -1;
     }
@@ -193,7 +201,7 @@ import openfl.utils.Function;
 
         for (l in 0...numLayers)
         {
-            var layer:IAtlasDisplayObjectContainer = getLayer(l);
+            var layer:#if flash Dynamic #else IAtlasObjectContainer #end = getLayer(l);
             var numElements:Int = 0;
 
             if(objectType == ObjectType.DISPLAYOBJECT)
@@ -203,7 +211,7 @@ import openfl.utils.Function;
 
             for (e in 0...numElements)
             {
-                var layerTile:IAtlasDisplayObjectContainer = null;
+                var layerTile:#if flash Dynamic #else IAtlasObjectContainer #end = null;
 
                 if(objectType == ObjectType.DISPLAYOBJECT)
                     layerTile = cast getDisplayObjectContainer(cast layer).getChildAt(e);
@@ -233,7 +241,7 @@ import openfl.utils.Function;
         return cast displayObjectContainer;
     }
 
-    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
+    @:access(openfl.extensions.animate.display.IAtlasObjectContainer)
     private function updateLayer(layerIndex:Int):Void
     {
         var displayObjectContainer:DisplayObjectContainer = null;
@@ -250,7 +258,7 @@ import openfl.utils.Function;
         var elements:Array<ElementData> = frameData != null ? frameData.elements : null;
         var numElements:Int = elements != null ? elements.length : 0;
 
-        var oldSymbol:IAtlasDisplayObjectContainer = null;
+        var oldSymbol:IAtlasObjectContainer = null;
 
         for (i in 0...numElements)
         {
@@ -262,7 +270,7 @@ import openfl.utils.Function;
                 oldSymbol = tileContainer.numTiles > i ? cast tileContainer.getTileAt(i) : null;
             }
 
-            var newSymbol:IAtlasDisplayObjectContainer = null;
+            var newSymbol:IAtlasObjectContainer = null;
             var symbolName:String = elementData.symbolName;
 
             if (!atlas.hasSymbol(symbolName))
@@ -292,7 +300,15 @@ import openfl.utils.Function;
                 }
             }
 
-            newSymbol.name = elementData.instanceName;
+            if(Std.isOfType(newSymbol, IAtlasTileContainer))
+            {
+                var newSymbol:IAtlasTileContainer = cast newSymbol;
+                newSymbol.name = elementData.instanceName;
+            }else if(Std.isOfType(newSymbol, IAtlasDisplayObjectContainer))
+            {
+                var newSymbol:IAtlasDisplayObjectContainer = cast newSymbol;
+                newSymbol.name = elementData.instanceName;
+            }
 
             var atlasPlayer:AnimateAtlasPlayer = cast newSymbol._player;
             atlasPlayer.setTransformationMatrix(elementData.matrix3D);
@@ -377,12 +393,13 @@ import openfl.utils.Function;
             {
                 var displayObjectContainer:DisplayObject = cast display;
                 matrix = displayObjectContainer.transform.matrix;
+                displayObjectContainer.visible = true;
             }else if(objectType == ObjectType.TILE){
                 var tileContainer:Tile = cast display;
                 matrix = tileContainer.matrix;
+                tileContainer.visible = true;
             }
 
-            display.visible = true;
 
             if(objectType == ObjectType.DISPLAYOBJECT)
             {
@@ -397,8 +414,17 @@ import openfl.utils.Function;
 
             if(data.position != null)
             {
-                display.x = data.position.x;
-                display.y = data.position.y;
+                if(objectType == ObjectType.DISPLAYOBJECT)
+                {
+                    var bitmap:Bitmap = cast display;
+                    bitmap.x = data.position.x;
+                    bitmap.y = data.position.y;
+                }else if(objectType == ObjectType.TILE){
+                    var tile:Tile = cast display;
+                    tile.x = data.position.x;
+                    tile.y = data.position.y;
+                }
+
             }else{
                 if(matrix.a != data.matrix3D.m00 || matrix.b != data.matrix3D.m01 || matrix.c != data.matrix3D.m10 || matrix.d != data.matrix3D.m11 || matrix.tx != data.matrix3D.m30 || matrix.ty != data.matrix3D.m31)
                 {
@@ -416,11 +442,18 @@ import openfl.utils.Function;
         }
         else if (display != null)
         {
-            display.visible = false;
+            if(objectType == ObjectType.DISPLAYOBJECT)
+            {
+                var displayObjectContainer:DisplayObject = cast display;
+                displayObjectContainer.visible = false;
+            }else if(objectType == ObjectType.TILE){
+                var tileContainer:Tile = cast display;
+                tileContainer.visible = false;
+            }
         }
     }
 
-    @:access(openfl.extensions.animate.display.IAtlasDisplayObjectContainer)
+    @:access(openfl.extensions.animate.display.IAtlasObjectContainer)
     private inline function setTransformationMatrix(data:Matrix3DData):Void
     {
         var matrix:Matrix = null;
@@ -452,14 +485,30 @@ import openfl.utils.Function;
 
     private inline function setColor(data:ColorData):Void
     {
-        if (data != null)
+        if(Std.isOfType(container, IAtlasTileContainer))
         {
-            var mode:String = data.mode;
-            container.alpha = (AnimateAtlasSheet.ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
-        }
-        else
+            var container:IAtlasTileContainer = cast container;
+            if (data != null)
+            {
+                var mode:String = data.mode;
+                container.alpha = (AnimateAtlasSheet.ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
+            }
+            else
+            {
+                container.alpha = 1.0;
+            }
+        }else if(Std.isOfType(container, IAtlasDisplayObject))
         {
-            container.alpha = 1.0;
+            var container:IAtlasDisplayObject = cast container;
+            if (data != null)
+            {
+                var mode:String = data.mode;
+                container.alpha = (AnimateAtlasSheet.ALPHA_MODES.indexOf(mode) >= 0) ? data.alphaMultiplier : 1.0;
+            }
+            else
+            {
+                container.alpha = 1.0;
+            }
         }
     }
 
@@ -538,15 +587,15 @@ import openfl.utils.Function;
         }
     }
 
-    private function getLayer(layerIndex:Int):IAtlasDisplayObjectContainer
+    private function getLayer(layerIndex:Int):#if flash Dynamic #else IAtlasObjectContainer #end
     {
         if(objectType == ObjectType.DISPLAYOBJECT)
         {
             var displayObjectContainer:DisplayObjectContainer = cast container;
-            return cast displayObjectContainer.getChildAt(layerIndex + 1);
+            return #if !flash cast #end displayObjectContainer.getChildAt(layerIndex + 1);
         }else if(objectType == ObjectType.TILE){
             var tileContainer:TileContainer = cast container;
-            return cast tileContainer.getTileAt(layerIndex + 1);
+            return #if !flash cast #end tileContainer.getTileAt(layerIndex + 1);
         }
 
         return null;

@@ -3,7 +3,7 @@ package openfl.extensions.animate.display;
 import openfl.extensions.animate.type.LoopMode;
 import openfl.events.Event;
 import openfl.display.Sprite;
-import haxe.Constraints.Function;
+import openfl.utils.Function;
 import openfl.display.Tile;
 import openfl.display.TileContainer;
 import openfl.extensions.animate.data.SymbolData;
@@ -36,9 +36,19 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
         _bitmap.visible = false;
 
         _player = new AnimateAtlasPlayer(ObjectType.DISPLAYOBJECT, data, atlas, this, _bitmap);
+        #if flash
+        this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+        #end
     }
 
-    private override function __enterFrame(deltaTime:Int):Void
+    private function onEnterFrame(e:Event):Void
+    {
+        #if flash
+        @:inline __enterFrame(0);
+        #end
+    }
+
+    private #if !flash override #end function __enterFrame(deltaTime:Int):Void
     {
         var now:Float = Lib.getTimer() / 1000.0;
         var passedTime:Float = now - _frameTimestamp;
@@ -81,7 +91,7 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
         _player.stop();
     }
 
-    public inline function getSymbolByName(name:String):IAtlasDisplayObjectContainer
+    public inline function getSymbolByName(name:String):IAtlasObjectContainer
     {
         return _player.getSymbolByName(name);
     }

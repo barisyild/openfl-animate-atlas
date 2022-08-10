@@ -1,18 +1,24 @@
 package openfl.extensions.animate;
 
+import openfl.extensions.animate.display.IAtlasObjectContainer;
+import openfl.errors.ArgumentError;
 import openfl.display.BitmapData;
 import openfl.extensions.animate.display.AnimateAtlasSprite;
-import openfl.extensions.animate.display.IAtlasDisplayObjectContainer;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 
 class AnimateSpriteAtlasSheet extends AnimateAtlasSheet {
     public var bitmapDataMap:Map<String, BitmapData>;
 
-    public function new(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic) {
+    public function new() {
+        super();
+    }
+
+    public override function process(spritemap:BitmapData, atlas:openfl.extensions.animate.struct.ATLAS, rawAnimationData:Dynamic):Void
+    {
         bitmapDataMap = new Map<String, BitmapData>();
 
-        super(spritemap, atlas, rawAnimationData);
+        super.process(spritemap, atlas, rawAnimationData);
     }
 
     @:allow(openfl.extensions.animate)
@@ -21,9 +27,9 @@ class AnimateSpriteAtlasSheet extends AnimateAtlasSheet {
         return bitmapDataMap.get(name);
     }
 
-    private override function getSymbol(name:String) : IAtlasDisplayObjectContainer
+    private override function getSymbol(name:String):IAtlasObjectContainer
     {
-        var pool:Array<IAtlasDisplayObjectContainer> = getSymbolPool(name);
+        var pool:Array<IAtlasObjectContainer> = getSymbolPool(name);
         if (pool.length == 0)
             return new AnimateAtlasSprite(this, name);
         else return pool.pop();
