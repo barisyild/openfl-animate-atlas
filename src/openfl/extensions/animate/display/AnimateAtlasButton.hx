@@ -23,10 +23,10 @@ class AnimateAtlasButton extends Sprite
     private var animateAtlasSprite:AnimateAtlasSprite;
 
     @:access(openfl.extensions.animate.AnimateAtlasSheet)
-    public function new(atlas:AnimateSpriteAtlasSheet, name:String = null)
+    public function new(atlas:AnimateSpriteAtlasSheet, name:String = null, smoothing:Bool = false)
     {
         super();
-        animateAtlasSprite = new AnimateAtlasSprite(atlas, name);
+        animateAtlasSprite = new AnimateAtlasSprite(atlas, name, smoothing);
         addChild(animateAtlasSprite);
 
         gotoAndStop("up");

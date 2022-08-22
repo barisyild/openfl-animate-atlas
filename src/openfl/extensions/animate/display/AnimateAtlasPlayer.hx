@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.errors.Error;
 import openfl.display.Bitmap;
 import openfl.extensions.animate.type.ObjectType;
 import openfl.extensions.animate.AnimateAtlasSheet;
@@ -50,6 +51,16 @@ import openfl.utils.Function;
     private var container:IAtlasObjectContainer;
     private var display:IAtlasObject;
     private var objectType:ObjectType;
+
+    public var smoothing(default, set):Bool;
+
+    private function set_smoothing(value:Bool):Bool
+    {
+        if(objectType != ObjectType.DISPLAYOBJECT)
+            throw new Error("smoothing is only available for display objects");
+
+        return smoothing = value;
+    }
 
 
     public function new(objectType:ObjectType, data:SymbolData, atlas:AnimateAtlasSheet, container:IAtlasObjectContainer, display:IAtlasObject) {
@@ -406,6 +417,7 @@ import openfl.utils.Function;
                 var animateSpriteAtlasSheet:AnimateSpriteAtlasSheet = cast atlas;
                 var bitmap:Bitmap = cast display;
                 bitmap.bitmapData = animateSpriteAtlasSheet.getBitmapData(data.name);
+                bitmap.smoothing = smoothing;
             }else if(objectType == ObjectType.TILE){
                 var animateTileAtlasSheet:AnimateTileAtlasSheet = cast atlas;
                 var tile:Tile = cast display;

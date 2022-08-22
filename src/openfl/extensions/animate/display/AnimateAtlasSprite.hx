@@ -26,7 +26,7 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
     private var _player:AnimateAtlasPlayer;
 
     @:access(openfl.extensions.animate.AnimateAtlasSheet)
-    public function new(atlas:AnimateSpriteAtlasSheet, name:String = null)
+    public function new(atlas:AnimateSpriteAtlasSheet, name:String = null, smoothing:Bool = false)
     {
         super();
         var data = atlas.getSymbolData(name == null ? atlas._defaultSymbolName : name);
@@ -36,6 +36,7 @@ class AnimateAtlasSprite extends Sprite implements IAtlasDisplayObjectContainer
         _bitmap.visible = false;
 
         _player = new AnimateAtlasPlayer(ObjectType.DISPLAYOBJECT, data, atlas, this, _bitmap);
+        _player.smoothing = smoothing;
         #if flash
         this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
         #end
