@@ -1,5 +1,6 @@
 package openfl.extensions.animate.display;
 
+import openfl.display.DisplayObject;
 import openfl.errors.Error;
 import openfl.display.Bitmap;
 import openfl.extensions.animate.type.ObjectType;
@@ -497,7 +498,7 @@ import openfl.utils.Function;
 
     private inline function setColor(data:ColorData):Void
     {
-        if(Std.isOfType(container, IAtlasTileContainer))
+        if(Std.isOfType(container, Tile))
         {
             var container:IAtlasTileContainer = cast container;
             if (data != null)
@@ -509,7 +510,7 @@ import openfl.utils.Function;
             {
                 container.alpha = 1.0;
             }
-        }else if(Std.isOfType(container, IAtlasDisplayObject))
+        }else if(Std.isOfType(container, DisplayObject))
         {
             var container:IAtlasDisplayObject = cast container;
             if (data != null)
