@@ -500,7 +500,7 @@ import openfl.utils.Function;
     {
         if(Std.isOfType(container, Tile))
         {
-            var container:IAtlasTileContainer = cast container;
+            var container:Tile = cast container;
             if (data != null)
             {
                 var mode:String = data.mode;
@@ -512,7 +512,7 @@ import openfl.utils.Function;
             }
         }else if(Std.isOfType(container, DisplayObject))
         {
-            var container:IAtlasDisplayObject = cast container;
+            var container:DisplayObject = cast container;
             if (data != null)
             {
                 var mode:String = data.mode;
