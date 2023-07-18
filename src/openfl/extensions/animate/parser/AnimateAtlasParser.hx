@@ -60,7 +60,7 @@ class AnimateAtlasParser {
             {
                 new Future<AnimateAtlasSheet>(function(){
                     return parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson, typeInstance);
-                }).onComplete(function(animationAtlas) {
+                }, true).onComplete(function(animationAtlas) {
                     promise.complete(animationAtlas);
                 }).onError(function(e) {
                     promise.error(e);
