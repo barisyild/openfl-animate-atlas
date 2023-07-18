@@ -58,8 +58,13 @@ class AnimateAtlasParser {
         lime.graphics.Image.loadFromBytes(compressedContent.spritemapBytes).onComplete(function(image) {
             try
             {
-                var animationAtlas = parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson, typeInstance);
-                promise.complete(animationAtlas);
+                new Future<AnimateAtlasSheet>(function(){
+                    return parseAssetSync(BitmapData.fromImage(image), compressedContent.spritemapJson, compressedContent.animationJson, typeInstance);
+                }).onComplete(function(animationAtlas) {
+                    promise.complete(animationAtlas);
+                }).onError(function(e) {
+                    promise.error(e);
+                });
             }
             catch(e:Exception)
             {
