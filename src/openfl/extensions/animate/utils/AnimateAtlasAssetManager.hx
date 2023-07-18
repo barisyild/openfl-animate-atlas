@@ -118,7 +118,12 @@ class AnimateAtlasAssetManager {
         var urlLoader:URLLoader = new URLLoader();
         urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
         urlLoader.addEventListener(Event.COMPLETE, function (e:Event) {
-            var bytes:Bytes = urlLoader.data;
+            var byteArray:ByteArray = urlLoader.data;
+            #if flash
+            var bytes:Bytes = Bytes.ofData(byteArray);
+            #else
+            var bytes:Bytes = cast byteArray;
+            #end
             AnimateAtlasParser.parseCompressedAsset(bytes, typeInstance).onComplete(function (atlas) {
                 promise.complete(atlas);
             }).onError(function (msg:Dynamic) {
