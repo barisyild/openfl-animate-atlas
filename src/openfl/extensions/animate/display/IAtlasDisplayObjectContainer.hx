@@ -1,37 +1,32 @@
 package openfl.extensions.animate.display;
 
-import openfl.extensions.animate.type.LoopMode;
-import openfl.utils.Function;
-import openfl.display.Bitmap;
-import openfl.display.Tile;
-
 interface IAtlasDisplayObjectContainer extends IAtlasObjectContainer {
     #if flash
-	public var name:String;
+	@:flash.property var name(get, set):String;
 	#else
     public var name(get, set):String;
     #end
 
     #if flash
-	public var visible:Bool;
+	@:flash.property var visible(get, set):Bool;
 	#else
     public var visible(get, set):Bool;
     #end
 
     #if flash
-	public var alpha:Float;
+	@:flash.property var alpha(get, set):Float;
 	#else
     public var alpha(get, set):Float;
     #end
 
     #if flash
-	public var x:Float;
+	@:flash.property var x(get, set):Float;
 	#else
     public var x(get, set):Float;
     #end
 
     #if flash
-	public var y:Float;
+	@:flash.property var y(get, set):Float;
 	#else
     public var y(get, set):Float;
     #end
