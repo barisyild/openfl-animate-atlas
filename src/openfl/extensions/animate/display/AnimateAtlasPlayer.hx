@@ -213,7 +213,7 @@ import openfl.utils.Function;
 
         for (l in 0...numLayers)
         {
-            var layer:#if flash Dynamic #else IAtlasObjectContainer #end = getLayer(l);
+            var layer:#if (flash || jvm) Dynamic #else IAtlasObjectContainer #end = getLayer(l);
             var numElements:Int = 0;
 
             if(objectType == ObjectType.DISPLAYOBJECT)
@@ -223,7 +223,7 @@ import openfl.utils.Function;
 
             for (e in 0...numElements)
             {
-                var layerTile:#if flash Dynamic #else IAtlasObjectContainer #end = null;
+                var layerTile:#if (flash || jvm) Dynamic #else IAtlasObjectContainer #end = null;
 
                 if(objectType == ObjectType.DISPLAYOBJECT)
                     layerTile = cast getDisplayObjectContainer(cast layer).getChildAt(e);
@@ -600,7 +600,7 @@ import openfl.utils.Function;
         }
     }
 
-    private function getLayer(layerIndex:Int):#if flash Dynamic #else IAtlasObjectContainer #end
+    private function getLayer(layerIndex:Int):#if (flash || jvm) Dynamic #else IAtlasObjectContainer #end
     {
         if(objectType == ObjectType.DISPLAYOBJECT)
         {
