@@ -223,7 +223,7 @@ import openfl.utils.Function;
 
             for (e in 0...numElements)
             {
-                var layerTile:#if (flash || jvm) Dynamic #else IAtlasObjectContainer #end = null;
+                var layerTile:#if flash Dynamic #else IAtlasObjectContainer #end = null;
 
                 if(objectType == ObjectType.DISPLAYOBJECT)
                     layerTile = cast getDisplayObjectContainer(cast layer).getChildAt(e);

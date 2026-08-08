@@ -22,7 +22,7 @@ import haxe.Json;
 @:generic
 class AnimateAtlasAssetManager {
     //Read content from memory
-    public static function loadAssetSync(directory:String, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet {
+    public static function loadAssetSync(directory:String, typeInstance:() -> AnimateAtlasSheet):AnimateAtlasSheet {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
         var spritemap:BitmapData = Assets.getBitmapData(directory +  "spritemap1.png");
@@ -38,7 +38,7 @@ class AnimateAtlasAssetManager {
     }*/
 
     //Load required library contents from storage/internet
-    public static function loadAsset(directory:String, typeInstance:Class<AnimateAtlasSheet>, useCache:Null<Bool> = true):Future<AnimateAtlasSheet> {
+    public static function loadAsset(directory:String, typeInstance:() -> AnimateAtlasSheet, useCache:Null<Bool> = true):Future<AnimateAtlasSheet> {
         directory = haxe.io.Path.addTrailingSlash(directory);
 
         var promise = new Promise<AnimateAtlasSheet>();
@@ -83,7 +83,7 @@ class AnimateAtlasAssetManager {
         return promise.future;
     }
 
-    public static function loadCompressedAssetSync(path:String, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet {
+    public static function loadCompressedAssetSync(path:String, typeInstance:() -> AnimateAtlasSheet):AnimateAtlasSheet {
         #if flash
         return AnimateAtlasParser.parseCompressedAssetSync(cast Assets.getBytes(path), typeInstance);
         #else
@@ -92,7 +92,7 @@ class AnimateAtlasAssetManager {
 
     }
 
-    public static function loadCompressedAsset(path:String, typeInstance:Class<AnimateAtlasSheet>):Future<AnimateAtlasSheet> {
+    public static function loadCompressedAsset(path:String, typeInstance:() -> AnimateAtlasSheet):Future<AnimateAtlasSheet> {
         var promise = new Promise<AnimateAtlasSheet>();
 
         Assets.loadBytes(path).onComplete (function (byteArray:ByteArray) {
@@ -112,7 +112,7 @@ class AnimateAtlasAssetManager {
 
     //TODO: implement requestAsset
 
-    public static function requestCompressedAsset(url:String, typeInstance:Class<AnimateAtlasSheet>):Future<AnimateAtlasSheet> {
+    public static function requestCompressedAsset(url:String, typeInstance:() -> AnimateAtlasSheet):Future<AnimateAtlasSheet> {
         var promise = new Promise<AnimateAtlasSheet>();
 
         var urlLoader:URLLoader = new URLLoader();

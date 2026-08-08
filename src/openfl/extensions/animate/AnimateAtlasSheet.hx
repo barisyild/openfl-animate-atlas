@@ -263,7 +263,9 @@ class AnimateAtlasSheet
 
     private static function normalizeJsonKeys(data:Dynamic):Dynamic
     {
-        if (Std.isOfType(data, String) || Std.isOfType(data, Float) || Std.isOfType(data, Int))
+        if (data == null)
+            return null;
+        else if (Std.isOfType(data, String) || Std.isOfType(data, Float) || Std.isOfType(data, Int) || Std.isOfType(data, Bool))
             return data;
         else if (Std.isOfType(data, Array))
         {

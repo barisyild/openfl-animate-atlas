@@ -47,7 +47,7 @@ class AnimateAtlasParser {
         }
     }
 
-    public static function parseCompressedAsset(bytes:Bytes, typeInstance:Class<AnimateAtlasSheet>):Future<AnimateAtlasSheet>
+    public static function parseCompressedAsset(bytes:Bytes, typeInstance:() -> AnimateAtlasSheet):Future<AnimateAtlasSheet>
     {
         var promise:Promise<AnimateAtlasSheet> = new Promise();
 
@@ -75,7 +75,7 @@ class AnimateAtlasParser {
         return promise.future;
     }
 
-    public static function parseCompressedAssetSync(bytes:Bytes, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet
+    public static function parseCompressedAssetSync(bytes:Bytes, typeInstance:() -> AnimateAtlasSheet):AnimateAtlasSheet
     {
         var compressedContent = readCompressedContent(bytes);
 
@@ -84,12 +84,12 @@ class AnimateAtlasParser {
         return parseAssetSync(spritemap, compressedContent.spritemapJson, compressedContent.animationJson, typeInstance);
     }
 
-    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String, typeInstance:Class<AnimateAtlasSheet>):AnimateAtlasSheet
+    public static function parseAssetSync(spritemap:BitmapData, spritemapJson:String, animationJson:String, typeInstance:() -> AnimateAtlasSheet):AnimateAtlasSheet
     {
         var animationAtlasData:openfl.extensions.animate.struct.ATLAS = Json.parse(spritemapJson);
         var rawAnimationData:Dynamic = Json.parse(animationJson);
 
-        var animateAtlasSheet = cast(Type.createInstance(typeInstance, []), AnimateAtlasSheet);
+        var animateAtlasSheet = typeInstance();
 
         animateAtlasSheet.process(spritemap, animationAtlasData, rawAnimationData);
 
